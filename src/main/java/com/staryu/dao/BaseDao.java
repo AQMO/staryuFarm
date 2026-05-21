@@ -26,8 +26,10 @@ public class BaseDao<T, ID extends Serializable> {
     }
 
     public T save(T entity) {
-        getSession().saveOrUpdate(entity);
-        return entity;
+        Object managed = getSession().merge(entity);
+        @SuppressWarnings("unchecked")
+        T result = (T) managed;
+        return result;
     }
 
     public Optional<T> findById(ID id) {

@@ -21,11 +21,14 @@ public class Product {
     @Column(name = "price", precision = 10, scale = 2, nullable = false)
     private BigDecimal price;
 
-    @Column(name = "pic", length = 500)
+    @Column(name = "pic", length = 500, nullable = false)
     private String pic;
 
     @Column(name = "stock", nullable = false)
     private Integer stock;
+
+    @Column(name = "sales", nullable = false)
+    private Integer sales = 0;
 
     @Column(name = "status", nullable = false)
     private Integer status = 1;
@@ -59,6 +62,8 @@ public class Product {
     public void setPic(String pic) { this.pic = pic; }
     public Integer getStock() { return stock; }
     public void setStock(Integer stock) { this.stock = stock; }
+    public Integer getSales() { return sales; }
+    public void setSales(Integer sales) { this.sales = sales; }
     public Integer getStatus() { return status; }
     public void setStatus(Integer status) { this.status = status; }
     public String getUnit() { return unit; }

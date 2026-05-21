@@ -18,20 +18,17 @@ public class FruitTree {
     @Column(name = "price", precision = 10, scale = 2, nullable = false)
     private BigDecimal price;
 
-    @Column(name = "pic", length = 500)
+    @Column(name = "pic", length = 500, nullable = false)
     private String pic;
 
     @Column(name = "stock", nullable = false)
     private Integer stock;
 
+    @Column(name = "lease_period", nullable = false)
+    private Integer leasePeriod;
+
     @Column(name = "status", nullable = false)
     private Integer status = 1;
-
-    @Column(name = "variety", length = 50)
-    private String variety;
-
-    @Column(name = "lease_period", length = 50)
-    private String leasePeriod;
 
     @Column(name = "description", columnDefinition = "TEXT")
     private String description;
@@ -57,12 +54,10 @@ public class FruitTree {
     public void setPic(String pic) { this.pic = pic; }
     public Integer getStock() { return stock; }
     public void setStock(Integer stock) { this.stock = stock; }
+    public Integer getLeasePeriod() { return leasePeriod; }
+    public void setLeasePeriod(Integer leasePeriod) { this.leasePeriod = leasePeriod; }
     public Integer getStatus() { return status; }
     public void setStatus(Integer status) { this.status = status; }
-    public String getVariety() { return variety; }
-    public void setVariety(String variety) { this.variety = variety; }
-    public String getLeasePeriod() { return leasePeriod; }
-    public void setLeasePeriod(String leasePeriod) { this.leasePeriod = leasePeriod; }
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
     public LocalDateTime getCreatedAt() { return createdAt; }
