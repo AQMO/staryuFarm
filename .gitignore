@@ -6,6 +6,9 @@ target/
 .idea/
 *.iml
 .vscode/
+.settings/
+.project
+.classpath
 
 # OS
 .DS_Store
@@ -13,3 +16,16 @@ Thumbs.db
 
 # Logs
 *.log
+
+# Node (for staryu-uniapp)
+node_modules/
+dist/
+
+# Build artifacts
+*.jar
+*.class
+*.war
+
+# Env
+.env
+.env.local
