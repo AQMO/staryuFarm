@@ -1,0 +1,11 @@
+[project]
+entrypoint = "index.html"
+requires = ["nodejs-24"]
+
+[dev]
+build = ["pnpm", "install"]
+run = ["npx", "vite", "--host", "0.0.0.0", "--port", "5001"]
+
+[deploy]
+build = ["bash", "-c", "pnpm install && pnpm run build"]
+run = ["npx", "server", "-l", "5000", "-s"]
