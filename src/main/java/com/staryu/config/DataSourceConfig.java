@@ -7,61 +7,56 @@ import org.springframework.context.annotation.Configuration;
 import javax.sql.DataSource;
 
 /**
- * 数据源配置 - 从环境变量 PGDATABASE_URL 解析数据库连接信息
+ * 数据源配置 - 从环境变量 MYSQL_URL 解析数据库连接信息
+ * 兼容格式:
+ *   1. MYSQL_URL=mysql://user:password@host:port/dbname
+ *   2. MYSQL_URL=jdbc:mysql://host:port/dbname?user=xxx&password=xxx
+ *   3. 无环境变量时使用本地默认连接
  */
 @Configuration
 public class DataSourceConfig {
 
     @Bean
     public DataSource dataSource() {
-        String dbUrl = System.getenv("PGDATABASE_URL");
-        if (dbUrl == null || dbUrl.isEmpty()) {
-            dbUrl = "jdbc:postgresql://localhost:5432/postgres?user=postgres&password=postgres";
-        }
+        String dbUrl = System.getenv("MYSQL_URL");
 
-        // Parse the URL format: postgres://user:password@host:port/dbname
         String jdbcUrl;
-        String username = "";
-        String password = "";
+        String username = "staryu";
+        String password = "staryu123";
 
-        if (dbUrl.startsWith("postgres://") || dbUrl.startsWith("postgresql://")) {
-            try {
-                // Remove protocol prefix
-                String rest = dbUrl.replaceFirst("^postgres(?:ql)?://", "");
-                // Extract user:password
-                int atIdx = rest.indexOf('@');
-                if (atIdx > 0) {
-                    String userPart = rest.substring(0, atIdx);
-                    rest = rest.substring(atIdx + 1);
-                    int colonIdx = userPart.indexOf(':');
-                    if (colonIdx > 0) {
-                        username = userPart.substring(0, colonIdx);
-                        password = userPart.substring(colonIdx + 1);
-                    } else {
-                        username = userPart;
+        if (dbUrl != null && !dbUrl.isEmpty()) {
+            if (dbUrl.startsWith("mysql://")) {
+                // Parse: mysql://user:password@host:port/dbname
+                try {
+                    String rest = dbUrl.replaceFirst("^mysql://", "");
+                    int atIdx = rest.indexOf('@');
+                    if (atIdx > 0) {
+                        String userPart = rest.substring(0, atIdx);
+                        rest = rest.substring(atIdx + 1);
+                        int colonIdx = userPart.indexOf(':');
+                        if (colonIdx > 0) {
+                            username = userPart.substring(0, colonIdx);
+                            password = userPart.substring(colonIdx + 1);
+                        } else {
+                            username = userPart;
+                        }
                     }
+                    // Add MySQL-specific parameters
+                    jdbcUrl = "jdbc:mysql://" + rest;
+                    if (!jdbcUrl.contains("useSSL")) {
+                        jdbcUrl += (jdbcUrl.contains("?") ? "&" : "?") + "useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai&characterEncoding=UTF-8";
+                    }
+                } catch (Exception e) {
+                    throw new RuntimeException("Failed to parse MYSQL_URL: " + dbUrl, e);
                 }
-                // Extract host:port/dbname
-                // Handle IPv6 addresses in brackets
-                String hostPortDb;
-                if (rest.startsWith("[")) {
-                    int bracketEnd = rest.indexOf(']');
-                    hostPortDb = rest.substring(bracketEnd + 1);
-                } else {
-                    hostPortDb = rest;
-                }
-                jdbcUrl = "jdbc:postgresql://" + hostPortDb;
-                // Add SSL mode for remote connections
-                if (!jdbcUrl.contains("sslmode")) {
-                    jdbcUrl += (jdbcUrl.contains("?") ? "&" : "?") + "sslmode=require";
-                }
-            } catch (Exception e) {
-                throw new RuntimeException("Failed to parse PGDATABASE_URL: " + dbUrl, e);
+            } else if (dbUrl.startsWith("jdbc:mysql://")) {
+                jdbcUrl = dbUrl;
+            } else {
+                throw new RuntimeException("Unsupported database URL format: " + dbUrl);
             }
-        } else if (dbUrl.startsWith("jdbc:postgresql://")) {
-            jdbcUrl = dbUrl;
         } else {
-            throw new RuntimeException("Unsupported database URL format: " + dbUrl);
+            // 默认本地 MySQL 连接
+            jdbcUrl = "jdbc:mysql://localhost:3306/staryu_farm?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai&characterEncoding=UTF-8";
         }
 
         System.out.println("[DataSource] JDBC URL: " + jdbcUrl);
@@ -71,7 +66,7 @@ public class DataSourceConfig {
         ds.setUrl(jdbcUrl);
         ds.setUsername(username);
         ds.setPassword(password);
-        ds.setDriverClassName("org.postgresql.Driver");
+        ds.setDriverClassName("com.mysql.cj.jdbc.Driver");
         ds.setInitialSize(2);
         ds.setMinIdle(2);
         ds.setMaxActive(20);

@@ -15,7 +15,7 @@
     <aop:aspectj-autoproxy/>
 
     <!-- DataSource is configured programmatically in DataSourceConfig.java
-         to read from PGDATABASE_URL environment variable -->
+         to read from MYSQL_URL environment variable -->
 
     <!-- SessionFactory -->
     <bean id="sessionFactory" class="org.springframework.orm.hibernate5.LocalSessionFactoryBean">
@@ -23,7 +23,7 @@
         <property name="packagesToScan" value="com.staryu.entity"/>
         <property name="hibernateProperties">
             <props>
-                <prop key="hibernate.dialect">org.hibernate.dialect.PostgreSQLDialect</prop>
+                <prop key="hibernate.dialect">org.hibernate.dialect.MySQLDialect</prop>
                 <prop key="hibernate.show_sql">false</prop>
                 <prop key="hibernate.format_sql">true</prop>
                 <prop key="hibernate.hbm2ddl.auto">update</prop>
