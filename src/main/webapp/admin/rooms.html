@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>星语农庄 - 房间管理</title>
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <style>
+        body { margin: 0; font-family: "Microsoft YaHei", sans-serif; background: #f0f2f5; }
+        .app-container { display: flex; min-height: 100vh; }
+        .sidebar { width: 220px; background: #304156; color: #fff; position: fixed; top: 0; bottom: 0; overflow-y: auto; }
+        .sidebar .logo { padding: 20px; font-size: 18px; font-weight: bold; text-align: center; border-bottom: 1px solid #3a4a5e; }
+        .sidebar .logo span { color: #67c23a; }
+        .sidebar .menu-item { display: block; padding: 14px 20px; color: #bfcbd9; text-decoration: none; font-size: 14px; transition: all .3s; }
+        .sidebar .menu-item:hover, .sidebar .menu-item.active { background: #263445; color: #409eff; }
+        .main-content { margin-left: 220px; flex: 1; }
+        .header { background: #fff; padding: 16px 24px; box-shadow: 0 1px 4px rgba(0,21,41,.08); display: flex; justify-content: space-between; align-items: center; }
+        .header h2 { margin: 0; font-size: 18px; color: #303133; }
+        .content { padding: 24px; }
+        .toolbar { margin-bottom: 16px; }
+    </style>
+</head>
+<body>
+<div id="app">
+    <div class="app-container">
+        <div class="sidebar">
+            <div class="logo"><span>星语</span>农庄</div>
+            <a href="/admin/dashboard" class="menu-item">📊 仪表盘</a>
+            <a href="/admin/rooms" class="menu-item active">🏠 房间管理</a>
+            <a href="/admin/food" class="menu-item">🍽 菜品管理</a>
+            <a href="/admin/products" class="menu-item">🛍 农产品管理</a>
+            <a href="/admin/fruit-trees" class="menu-item">🌳 果木管理</a>
+            <a href="/admin/plots" class="menu-item">🗺 地块管理</a>
+            <a href="/admin/orders" class="menu-item">📋 订单管理</a>
+            <a href="/admin/users" class="menu-item">👥 用户管理</a>
+            <a href="/admin/config" class="menu-item">⚙ 模块配置</a>
+        </div>
+        <div class="main-content">
+            <div class="header"><h2>房间管理</h2></div>
+            <div class="content">
+                <div class="toolbar">
+                    <el-button type="primary" @click="handleAdd">新增房间</el-button>
+                </div>
+                <el-table :data="list" border stripe>
+                    <el-table-column prop="id" label="ID" width="60"></el-table-column>
+                    <el-table-column prop="name" label="房间名称" width="160"></el-table-column>
+                    <el-table-column prop="price" label="价格(元/晚)" width="120"></el-table-column>
+                    <el-table-column prop="capacity" label="容纳人数" width="100"></el-table-column>
+                    <el-table-column prop="stock" label="可订数量" width="100"></el-table-column>
+                    <el-table-column label="状态" width="80">
+                        <template slot-scope="s"><el-tag :type="s.row.status===1?'success':'danger'">{{s.row.status===1?'上架':'下架'}}</el-tag></template>
+                    </el-table-column>
+                    <el-table-column prop="description" label="描述" show-overflow-tooltip></el-table-column>
+                    <el-table-column label="操作" width="160">
+                        <template slot-scope="s">
+                            <el-button size="mini" @click="handleEdit(s.row)">编辑</el-button>
+                            <el-button size="mini" type="danger" @click="handleDelete(s.row)">删除</el-button>
+                        </template>
+                    </el-table-column>
+                </el-table>
+                <el-dialog :title="dialogTitle" :visible.sync="dialogVisible">
+                    <el-form :model="form" label-width="100px">
+                        <el-form-item label="房间名称"><el-input v-model="form.name"></el-input></el-form-item>
+                        <el-form-item label="价格"><el-input-number v-model="form.price" :min="0"></el-input-number></el-form-item>
+                        <el-form-item label="容纳人数"><el-input-number v-model="form.capacity" :min="1"></el-input-number></el-form-item>
+                        <el-form-item label="可订数量"><el-input-number v-model="form.stock" :min="0"></el-input-number></el-form-item>
+                        <el-form-item label="图片URL"><el-input v-model="form.pic"></el-input></el-form-item>
+                        <el-form-item label="设施"><el-input v-model="form.facility"></el-input></el-form-item>
+                        <el-form-item label="描述"><el-input type="textarea" v-model="form.description"></el-input></el-form-item>
+                        <el-form-item label="状态"><el-switch v-model="form.status" :active-value="1" :inactive-value="0" active-text="上架" inactive-text="下架"></el-switch></el-form-item>
+                    </el-form>
+                    <span slot="footer">
+                        <el-button @click="dialogVisible=false">取消</el-button>
+                        <el-button type="primary" @click="saveForm">保存</el-button>
+                    </span>
+                </el-dialog>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="https://unpkg.com/vue@2/dist/vue.js"></script>
+<script src="https://unpkg.com/element-ui/lib/index.js"></script>
+<script src="https://unpkg.com/jquery@3/dist/jquery.min.js"></script>
+<script>
+new Vue({
+    el: '#app',
+    data() {
+        return {
+            list: [],
+            dialogVisible: false,
+            dialogTitle: '新增房间',
+            form: { name:'', price:0, capacity:1, stock:1, pic:'', facility:'', description:'', status:1 }
+        };
+    },
+    created() { this.loadList(); },
+    methods: {
+        loadList() { $.getJSON('/api/rooms', d => { this.list = d.data || []; }); },
+        resetForm() { this.form = { name:'', price:0, capacity:1, stock:1, pic:'', facility:'', description:'', status:1 }; },
+        handleAdd() { this.resetForm(); this.dialogTitle = '新增房间'; this.dialogVisible = true; },
+        handleEdit(row) { this.form = JSON.parse(JSON.stringify(row)); this.dialogTitle = '编辑房间'; this.dialogVisible = true; },
+        saveForm() {
+            const isEdit = !!this.form.id;
+            $.ajax({ url: isEdit ? '/api/rooms/' + this.form.id : '/api/rooms', method: isEdit ? 'PUT' : 'POST', contentType: 'application/json', data: JSON.stringify(this.form), success: () => { this.$message.success('保存成功'); this.dialogVisible = false; this.loadList(); }, error: () => { this.$message.error('保存失败'); } });
+        },
+        handleDelete(row) {
+            this.$confirm('确认删除?', '提示', { type: 'warning' }).then(() => {
+                $.ajax({ url: '/api/rooms/' + row.id, method: 'DELETE', success: () => { this.$message.success('删除成功'); this.loadList(); }, error: () => { this.$message.error('删除失败'); } });
+            }).catch(() => {});
+        }
+    }
+});
+</script>
+</body>
+</html>

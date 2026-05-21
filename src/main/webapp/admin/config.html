@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>星语农庄 - 模块配置</title>
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <style>
+        body { margin: 0; font-family: "Microsoft YaHei", sans-serif; background: #f0f2f5; }
+        .app-container { display: flex; min-height: 100vh; }
+        .sidebar { width: 220px; background: #304156; color: #fff; position: fixed; top: 0; bottom: 0; overflow-y: auto; }
+        .sidebar .logo { padding: 20px; font-size: 18px; font-weight: bold; text-align: center; border-bottom: 1px solid #3a4a5e; }
+        .sidebar .logo span { color: #67c23a; }
+        .sidebar .menu-item { display: block; padding: 14px 20px; color: #bfcbd9; text-decoration: none; font-size: 14px; transition: all .3s; }
+        .sidebar .menu-item:hover, .sidebar .menu-item.active { background: #263445; color: #409eff; }
+        .main-content { margin-left: 220px; flex: 1; }
+        .header { background: #fff; padding: 16px 24px; box-shadow: 0 1px 4px rgba(0,21,41,.08); }
+        .header h2 { margin: 0; font-size: 18px; color: #303133; }
+        .content { padding: 24px; }
+    </style>
+</head>
+<body>
+<div id="app">
+    <div class="app-container">
+        <div class="sidebar">
+            <div class="logo"><span>星语</span>农庄</div>
+            <a href="/admin/dashboard" class="menu-item">📊 仪表盘</a>
+            <a href="/admin/rooms" class="menu-item">🏠 房间管理</a>
+            <a href="/admin/food" class="menu-item">🍽 菜品管理</a>
+            <a href="/admin/products" class="menu-item">🛍 农产品管理</a>
+            <a href="/admin/fruit-trees" class="menu-item">🌳 果木管理</a>
+            <a href="/admin/plots" class="menu-item">🗺 地块管理</a>
+            <a href="/admin/orders" class="menu-item">📋 订单管理</a>
+            <a href="/admin/users" class="menu-item">👥 用户管理</a>
+            <a href="/admin/config" class="menu-item active">⚙ 模块配置</a>
+        </div>
+        <div class="main-content">
+            <div class="header"><h2>模块配置</h2></div>
+            <div class="content">
+                <p style="color:#909399;margin-bottom:16px">控制小程序首页各模块的显示与排序</p>
+                <el-table :data="modules" border stripe>
+                    <el-table-column prop="id" label="ID" width="60"></el-table-column>
+                    <el-table-column prop="moduleKey" label="模块标识" width="120"></el-table-column>
+                    <el-table-column prop="moduleName" label="模块名称" width="120"></el-table-column>
+                    <el-table-column prop="icon" label="图标" width="80"></el-table-column>
+                    <el-table-column prop="description" label="描述" show-overflow-tooltip></el-table-column>
+                    <el-table-column prop="sort" label="排序" width="100">
+                        <template slot-scope="s"><el-input-number v-model="s.row.sort" :min="1" :max="10" size="small" @change="saveRow(s.row)"></el-input-number></template>
+                    </el-table-column>
+                    <el-table-column label="启用" width="100">
+                        <template slot-scope="s"><el-switch v-model="s.row.isEnabled" @change="saveRow(s.row)"></el-switch></template>
+                    </el-table-column>
+                </el-table>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="https://unpkg.com/vue@2/dist/vue.js"></script>
+<script src="https://unpkg.com/element-ui/lib/index.js"></script>
+<script src="https://unpkg.com/jquery@3/dist/jquery.min.js"></script>
+<script>
+new Vue({
+    el: '#app',
+    data() { return { modules: [] }; },
+    created() { this.loadList(); },
+    methods: {
+        loadList() { $.getJSON('/api/config', d => { this.modules = d.data || []; }); },
+        saveRow(m) {
+            $.ajax({ url: '/api/config/' + m.id, method: 'PUT', contentType: 'application/json', data: JSON.stringify(m), success: () => { this.$message.success('更新成功'); }, error: () => { this.$message.error('更新失败'); } });
+        }
+    }
+});
+</script>
+</body>
+</html>

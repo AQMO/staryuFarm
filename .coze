@@ -1,16 +1,10 @@
 [project]
-requires = [ "nodejs-24" ]
-template = "nextjs"
-version = "0.0.22"
-appliedPatches = [ ]
+requires = ["java-17"]
 
 [dev]
-build = [ "bash", "./scripts/prepare.sh" ]
-run = [ "bash", "./scripts/dev.sh" ]
-validate = [ "bash", "./scripts/validate.sh" ]
-deps = [ "git" ]
+build = ["bash", "-c", "mvn clean package -DskipTests"]
+run = ["bash", "-c", "export PGDATABASE_URL && java -jar target/staryu-web.jar --server.port=5000"]
 
 [deploy]
-build = [ "bash", "./scripts/build.sh" ]
-run = [ "bash", "./scripts/start.sh" ]
-deps = [ "git" ]
+build = ["bash", "-c", "mvn clean package -DskipTests"]
+run = ["bash", "-c", "export PGDATABASE_URL && java -jar target/staryu-web.jar --server.port=5000"]

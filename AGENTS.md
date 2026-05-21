@@ -3,22 +3,22 @@
 ## 项目概览
 星语农庄多功能小程序，包含5大业务模块：房间预订、在线点餐、农产品商城、果木租赁、地块租赁。
 项目分为两个子项目：
-- **staryu-web**（`/workspace/projects/`）：Next.js 16 后端 + 管理后台，提供 API 和管理面板
+- **staryu-web**（`/workspace/projects/`）：Spring+SpringMVC+Hibernate 后端 + JSP管理后台
 - **staryu-uniapp**（`/workspace/staryu-uniapp/`）：Vue 3 移动端前端，模拟小程序体验
 
 ## 技术栈
-- 后端：Next.js 16 (App Router) + TypeScript + Supabase (PostgreSQL)
+- 后端：Spring 6 + SpringMVC + Hibernate 6 + MySQL(PostgreSQL via Supabase) + Maven
+- 管理后台：HTML + CSS3 + JavaScript + Element UI + jQuery
 - 前端：Vue 3 + TypeScript + Vue Router + Pinia + Vite
-- UI：管理后台使用 shadcn/ui，移动端使用手写 Tailwind CSS
-- 样式：Tailwind CSS 4
+- 样式：Tailwind CSS (uniapp) / Element UI (admin)
 
 ## 构建和运行命令
 
 ### staryu-web（工作目录：/workspace/projects/）
-- 安装依赖：`pnpm install`
-- 开发：`coze dev`（端口 5000）
-- 构建：`pnpm run build`
-- 启动：`pnpm run start`
+- 编译：`mvn clean package -DskipTests`
+- 运行：`export PGDATABASE_URL && java -jar target/staryu-web.jar --server.port=5000`
+- 开发：先编译再运行（嵌入式Tomcat，端口5000）
+- JSP管理后台：`http://localhost:5000/admin/dashboard`
 
 ### staryu-uniapp（工作目录：/workspace/staryu-uniapp/）
 - 安装依赖：`pnpm install`
@@ -30,50 +30,65 @@
 
 ### staryu-web
 ```
-src/
-├── app/
-│   ├── admin/          # 管理后台页面
-│   │   ├── page.tsx    # 仪表盘
-│   │   ├── layout.tsx  # 管理布局（侧边栏）
-│   │   ├── rooms/      # 房间管理
-│   │   ├── food/       # 菜品管理（含分类）
-│   │   ├── products/   # 农产品管理
-│   │   ├── fruit-trees/# 果木管理
-│   │   ├── plots/      # 地块管理
-│   │   ├── orders/     # 订单管理
-│   │   ├── users/      # 用户管理
-│   │   └── config/     # 模块配置
-│   └── api/            # REST API 路由
-│       ├── config/     # 模块配置 CRUD
-│       ├── rooms/      # 房间 CRUD
-│       ├── food/       # 菜品 CRUD
-│       ├── food-category/ # 菜品分类 CRUD
-│       ├── products/   # 农产品 CRUD
-│       ├── product-category/ # 农产品分类 CRUD
-│       ├── fruit-trees/ # 果木 CRUD
-│       ├── plots/      # 地块 CRUD
-│       ├── orders/     # 订单 CRUD
-│       ├── cart/       # 购物车 CRUD
-│       ├── users/      # 用户 CRUD
-│       ├── address/    # 收货地址 CRUD
-│       └── stats/      # 统计数据
-├── components/
-│   ├── admin/
-│   │   └── CrudPage.tsx  # 通用 CRUD 页面组件
-│   └── ui/              # shadcn/ui 组件库
-├── storage/database/
-│   ├── supabase-client.ts # Supabase 客户端
-│   └── shared/schema.ts   # 数据库 Schema 定义
-└── page.tsx             # 首页（重定向到 /admin）
+src/main/
+├── java/com/staryu/
+│   ├── Main.java              # 嵌入式Tomcat启动入口
+│   ├── config/
+│   │   ├── WebConfig.java     # Web MVC配置
+│   │   └── DataSourceConfig.java # 数据源配置(读取PGDATABASE_URL)
+│   ├── entity/                # Hibernate实体类
+│   │   ├── User.java
+│   │   ├── ModuleConfig.java
+│   │   ├── Room.java
+│   │   ├── Food.java / FoodCategory.java
+│   │   ├── Product.java / ProductCategory.java
+│   │   ├── FruitTree.java
+│   │   ├── Plot.java
+│   │   ├── Order.java
+│   │   ├── Cart.java
+│   │   └── Address.java
+│   ├── dao/                   # 数据访问层(BaseDao + 各实体Dao)
+│   ├── service/               # 业务逻辑层(BusinessService)
+│   └── controller/            # SpringMVC控制器
+│       ├── AdminController.java  # 管理后台页面路由
+│       ├── ConfigController.java # 模块配置API
+│       ├── RoomController.java   # 房间API
+│       ├── FoodController.java / FoodCategoryController.java
+│       ├── ProductController.java / ProductCategoryController.java
+│       ├── FruitTreeController.java
+│       ├── PlotController.java
+│       ├── OrderController.java
+│       ├── CartController.java
+│       ├── UserController.java
+│       ├── AddressController.java
+│       └── StatsController.java
+├── resources/
+│   ├── applicationContext.xml  # Spring IoC配置
+│   ├── spring-mvc.xml          # SpringMVC配置
+│   └── jdbc.properties         # JDBC参数(开发用)
+└── webapp/
+    ├── WEB-INF/web.xml         # Servlet配置
+    ├── admin/                  # 管理后台HTML页面
+    │   ├── dashboard.html
+    │   ├── rooms.html
+    │   ├── food.html
+    │   ├── products.html
+    │   ├── fruit-trees.html
+    │   ├── plots.html
+    │   ├── orders.html
+    │   ├── users.html
+    │   └── config.html
+    └── static/                 # 静态资源
 ```
 
 ### staryu-uniapp
 ```
 src/
-├── api/index.ts        # API 请求封装
-├── stores/             # Pinia 状态管理
+├── api/index.ts        # API请求封装(axios)
+├── stores/             # Pinia状态管理
 │   ├── user.ts         # 用户状态
-│   └── config.ts       # 模块配置
+│   ├── config.ts       # 模块配置
+│   └── cart.ts         # 购物车
 ├── router/index.ts     # 路由配置
 ├── views/
 │   ├── home/           # 首页（模块入口）
@@ -83,7 +98,9 @@ src/
 │   ├── rent/           # 租赁中心（果木+地块）
 │   ├── orders/         # 订单列表
 │   └── profile/        # 个人中心
-└── App.vue             # 根组件（含底部 TabBar）
+├── components/
+│   └── TabBar.vue      # 底部TabBar
+└── App.vue             # 根组件
 ```
 
 ## 数据库表
@@ -99,8 +116,8 @@ src/
 - `address` - 收货地址表
 
 ## 代码风格
-- TypeScript strict 模式，禁止隐式 any
-- 函数参数、返回值必须标注类型
-- React 组件使用 'use client' 指令（涉及 hooks 的组件）
-- API 路由统一使用 getSupabaseClient() 获取数据库客户端
-- 前端 API 请求统一通过 src/api/index.ts 封装
+- Java: Spring注解驱动，Hibernate注解映射
+- 控制器REST风格返回JSON（@ResponseBody）
+- DAO基于Hibernate SessionFactory
+- 管理后台使用Element UI + jQuery AJAX
+- 前端API请求统一通过src/api/index.ts封装

@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>星语农庄 - 仪表盘</title>
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <style>
+        body { margin: 0; font-family: "Microsoft YaHei", sans-serif; background: #f0f2f5; }
+        .app-container { display: flex; min-height: 100vh; }
+        .sidebar { width: 220px; background: #304156; color: #fff; position: fixed; top: 0; bottom: 0; overflow-y: auto; }
+        .sidebar .logo { padding: 20px; font-size: 18px; font-weight: bold; text-align: center; border-bottom: 1px solid #3a4a5e; }
+        .sidebar .logo span { color: #67c23a; }
+        .sidebar .menu-item { display: block; padding: 14px 20px; color: #bfcbd9; text-decoration: none; font-size: 14px; transition: all .3s; }
+        .sidebar .menu-item:hover, .sidebar .menu-item.active { background: #263445; color: #409eff; }
+        .main-content { margin-left: 220px; flex: 1; }
+        .header { background: #fff; padding: 16px 24px; box-shadow: 0 1px 4px rgba(0,21,41,.08); display: flex; justify-content: space-between; align-items: center; }
+        .header h2 { margin: 0; font-size: 18px; color: #303133; }
+        .content { padding: 24px; }
+        .stat-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
+        .stat-card { background: #fff; border-radius: 8px; padding: 20px; box-shadow: 0 2px 12px rgba(0,0,0,.06); }
+        .stat-card .label { font-size: 14px; color: #909399; margin-bottom: 8px; }
+        .stat-card .value { font-size: 28px; font-weight: bold; color: #303133; }
+        .stat-card.green .value { color: #67c23a; }
+        .stat-card.blue .value { color: #409eff; }
+        .stat-card.orange .value { color: #e6a23c; }
+        .stat-card.red .value { color: #f56c6c; }
+        .module-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+        .module-card { background: #fff; border-radius: 8px; padding: 20px; box-shadow: 0 2px 12px rgba(0,0,0,.06); }
+        .module-card h3 { margin: 0 0 8px; font-size: 16px; color: #303133; }
+        .module-card p { margin: 0; font-size: 13px; color: #909399; }
+        .module-card .status { margin-top: 12px; }
+    </style>
+</head>
+<body>
+<div id="app">
+    <div class="app-container">
+        <div class="sidebar">
+            <div class="logo"><span>星语</span>农庄</div>
+            <a href="/admin/dashboard" class="menu-item active">📊 仪表盘</a>
+            <a href="/admin/rooms" class="menu-item">🏠 房间管理</a>
+            <a href="/admin/food" class="menu-item">🍽 菜品管理</a>
+            <a href="/admin/products" class="menu-item">🛍 农产品管理</a>
+            <a href="/admin/fruit-trees" class="menu-item">🌳 果木管理</a>
+            <a href="/admin/plots" class="menu-item">🗺 地块管理</a>
+            <a href="/admin/orders" class="menu-item">📋 订单管理</a>
+            <a href="/admin/users" class="menu-item">👥 用户管理</a>
+            <a href="/admin/config" class="menu-item">⚙ 模块配置</a>
+        </div>
+        <div class="main-content">
+            <div class="header">
+                <h2>仪表盘</h2>
+                <span style="color:#909399">欢迎回来，管理员</span>
+            </div>
+            <div class="content">
+                <div class="stat-cards">
+                    <div class="stat-card green">
+                        <div class="label">房间总数</div>
+                        <div class="value">{{ stats.counts?.rooms || 0 }}</div>
+                    </div>
+                    <div class="stat-card blue">
+                        <div class="label">菜品总数</div>
+                        <div class="value">{{ stats.counts?.food || 0 }}</div>
+                    </div>
+                    <div class="stat-card orange">
+                        <div class="label">农产品总数</div>
+                        <div class="value">{{ stats.counts?.products || 0 }}</div>
+                    </div>
+                    <div class="stat-card red">
+                        <div class="label">待处理订单</div>
+                        <div class="value">{{ stats.pendingOrders || 0 }}</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="label">今日营收</div>
+                        <div class="value">¥{{ stats.todayRevenue || 0 }}</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="label">用户总数</div>
+                        <div class="value">{{ stats.counts?.users || 0 }}</div>
+                    </div>
+                </div>
+                <h3 style="margin-top:24px">业务模块</h3>
+                <div class="module-grid">
+                    <div class="module-card" v-for="m in modules" :key="m.id">
+                        <h3>{{ m.moduleName }}</h3>
+                        <p>{{ m.description }}</p>
+                        <div class="status">
+                            <el-switch v-model="m.isEnabled" @change="toggleModule(m)" active-text="已开启" inactive-text="已关闭"></el-switch>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="https://unpkg.com/vue@2/dist/vue.js"></script>
+<script src="https://unpkg.com/element-ui/lib/index.js"></script>
+<script src="https://unpkg.com/jquery@3/dist/jquery.min.js"></script>
+<script>
+new Vue({
+    el: '#app',
+    data() { return { stats: { counts: {} }, modules: [] }; },
+    created() {
+        $.getJSON('/api/stats', d => { this.stats = d; });
+        $.getJSON('/api/config', d => { this.modules = d.data || []; });
+    },
+    methods: {
+        toggleModule(m) {
+            $.ajax({ url: '/api/config/' + m.id, method: 'PUT', contentType: 'application/json', data: JSON.stringify(m), success: () => { this.$message.success('更新成功'); }, error: () => { this.$message.error('更新失败'); } });
+        }
+    }
+});
+</script>
+</body>
+</html>

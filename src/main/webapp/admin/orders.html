@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>星语农庄 - 订单管理</title>
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <style>
+        body { margin: 0; font-family: "Microsoft YaHei", sans-serif; background: #f0f2f5; }
+        .app-container { display: flex; min-height: 100vh; }
+        .sidebar { width: 220px; background: #304156; color: #fff; position: fixed; top: 0; bottom: 0; overflow-y: auto; }
+        .sidebar .logo { padding: 20px; font-size: 18px; font-weight: bold; text-align: center; border-bottom: 1px solid #3a4a5e; }
+        .sidebar .logo span { color: #67c23a; }
+        .sidebar .menu-item { display: block; padding: 14px 20px; color: #bfcbd9; text-decoration: none; font-size: 14px; transition: all .3s; }
+        .sidebar .menu-item:hover, .sidebar .menu-item.active { background: #263445; color: #409eff; }
+        .main-content { margin-left: 220px; flex: 1; }
+        .header { background: #fff; padding: 16px 24px; box-shadow: 0 1px 4px rgba(0,21,41,.08); }
+        .header h2 { margin: 0; font-size: 18px; color: #303133; }
+        .content { padding: 24px; }
+    </style>
+</head>
+<body>
+<div id="app">
+    <div class="app-container">
+        <div class="sidebar">
+            <div class="logo"><span>星语</span>农庄</div>
+            <a href="/admin/dashboard" class="menu-item">📊 仪表盘</a>
+            <a href="/admin/rooms" class="menu-item">🏠 房间管理</a>
+            <a href="/admin/food" class="menu-item">🍽 菜品管理</a>
+            <a href="/admin/products" class="menu-item">🛍 农产品管理</a>
+            <a href="/admin/fruit-trees" class="menu-item">🌳 果木管理</a>
+            <a href="/admin/plots" class="menu-item">🗺 地块管理</a>
+            <a href="/admin/orders" class="menu-item active">📋 订单管理</a>
+            <a href="/admin/users" class="menu-item">👥 用户管理</a>
+            <a href="/admin/config" class="menu-item">⚙ 模块配置</a>
+        </div>
+        <div class="main-content">
+            <div class="header"><h2>订单管理</h2></div>
+            <div class="content">
+                <div style="margin-bottom:16px">
+                    <el-select v-model="filterStatus" placeholder="订单状态" clearable @change="loadList">
+                        <el-option label="待支付" value="pending"></el-option>
+                        <el-option label="已支付" value="paid"></el-option>
+                        <el-option label="已完成" value="completed"></el-option>
+                        <el-option label="已取消" value="cancelled"></el-option>
+                    </el-select>
+                </div>
+                <el-table :data="list" border stripe>
+                    <el-table-column prop="id" label="ID" width="60"></el-table-column>
+                    <el-table-column prop="orderNo" label="订单号" width="180"></el-table-column>
+                    <el-table-column prop="userName" label="用户" width="100"></el-table-column>
+                    <el-table-column prop="type" label="类型" width="80">
+                        <template slot-scope="s">{{typeMap[s.row.type]||s.row.type}}</template>
+                    </el-table-column>
+                    <el-table-column prop="totalAmount" label="金额(元)" width="100"></el-table-column>
+                    <el-table-column label="状态" width="90">
+                        <template slot-scope="s"><el-tag :type="statusType(s.row.status)">{{statusMap[s.row.status]||s.row.status}}</el-tag></template>
+                    </el-table-column>
+                    <el-table-column prop="createdAt" label="创建时间" width="160"></el-table-column>
+                    <el-table-column label="操作" width="200">
+                        <template slot-scope="s">
+                            <el-button size="mini" v-if="s.row.status==='pending'" type="success" @click="updateStatus(s.row,'paid')">确认支付</el-button>
+                            <el-button size="mini" v-if="s.row.status==='paid'" type="primary" @click="updateStatus(s.row,'completed')">完成</el-button>
+                            <el-button size="mini" v-if="s.row.status==='pending'" type="danger" @click="updateStatus(s.row,'cancelled')">取消</el-button>
+                        </template>
+                    </el-table-column>
+                </el-table>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="https://unpkg.com/vue@2/dist/vue.js"></script>
+<script src="https://unpkg.com/element-ui/lib/index.js"></script>
+<script src="https://unpkg.com/jquery@3/dist/jquery.min.js"></script>
+<script>
+new Vue({
+    el: '#app',
+    data() {
+        return {
+            list: [], filterStatus: '',
+            statusMap: { pending:'待支付', paid:'已支付', completed:'已完成', cancelled:'已取消' },
+            typeMap: { room:'房间', food:'餐饮', product:'农产品', fruit_tree:'果木', plot:'地块' }
+        };
+    },
+    created() { this.loadList(); },
+    methods: {
+        loadList() {
+            let url = '/api/orders';
+            if (this.filterStatus) url += '?status=' + this.filterStatus;
+            $.getJSON(url, d => { this.list = d.data || []; });
+        },
+        statusType(s) { return {pending:'warning',paid:'success',completed:'info',cancelled:'danger'}[s]||''; },
+        updateStatus(row, status) {
+            $.ajax({ url: '/api/orders/' + row.id, method: 'PUT', contentType: 'application/json', data: JSON.stringify({status: status}), success: () => { this.$message.success('操作成功'); this.loadList(); }, error: () => { this.$message.error('操作失败'); } });
+        }
+    }
+});
+</script>
+</body>
+</html>
