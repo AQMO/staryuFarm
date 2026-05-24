@@ -15,11 +15,7 @@
 
     <!-- ========== 数据库属性配置 ========== -->
     <!-- DataSourceConfig 继承 PropertyPlaceholderConfigurer，加载 jdbc.properties 并支持环境变量覆盖 -->
-    <bean class="com.staryu.config.DataSourceConfig">
-        <property name="location" value="classpath:jdbc.properties"/>
-        <property name="ignoreUnresolvablePlaceholders" value="true"/>
-        <property name="order" value="1"/>
-    </bean>
+    <bean class="com.staryu.config.DataSourceConfig"/>
 
     <!-- ========== 数据源 (Druid 连接池) ========== -->
     <bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource"
