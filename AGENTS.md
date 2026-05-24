@@ -3,22 +3,25 @@
 ## 项目概览
 星语农庄多功能小程序，包含5大业务模块：房间预订、在线点餐、农产品商城、果木租赁、地块租赁。
 项目分为两个子项目：
-- **staryu-web**（`/workspace/projects/`）：Spring+SpringMVC+Hibernate 后端 + JSP管理后台
+- **staryu-web**（`/workspace/projects/`）：Spring+SpringMVC+Hibernate 后端 + HTML管理后台
 - **staryu-uniapp**（`/workspace/staryu-uniapp/`）：Vue 3 移动端前端，模拟小程序体验
 
 ## 技术栈
-- 后端：Spring 6 + SpringMVC + Hibernate 6 + MySQL(PostgreSQL via Supabase) + Maven
+- 后端：Spring 5 + SpringMVC + Hibernate 5 + MySQL/PostgreSQL + Maven
 - 管理后台：HTML + CSS3 + JavaScript + Element UI + jQuery
 - 前端：Vue 3 + TypeScript + Vue Router + Pinia + Vite
 - 样式：Tailwind CSS (uniapp) / Element UI (admin)
+- 部署：WAR 包，支持外部 Tomcat 9 和嵌入式 Tomcat 两种启动方式
 
 ## 构建和运行命令
 
 ### staryu-web（工作目录：/workspace/projects/）
 - 编译：`mvn clean package -DskipTests`
-- 运行：`export PGDATABASE_URL && java -jar target/staryu-web.jar --server.port=5000`
-- 开发：先编译再运行（嵌入式Tomcat，端口5000）
-- JSP管理后台：`http://localhost:5000/admin/dashboard`
+- 产出：`target/staryu-web.war`
+- 外部 Tomcat 部署：将 WAR 放入 Tomcat 的 webapps/ 目录
+- 嵌入式启动：`cd /tmp/staryu-web && jar -xf /workspace/projects/target/staryu-web.war && java -cp 'WEB-INF/lib/*:WEB-INF/classes' -Dcatalina.base=/tmp/staryu-web -Dserver.port=5000 com.staryu.config.EmbeddedMain`
+- 管理后台：`http://localhost:5000/admin/dashboard`
+- 数据库自动检测：MYSQL_URL→MySQL, PGDATABASE_URL→PostgreSQL
 
 ### staryu-uniapp（工作目录：/workspace/staryu-uniapp/）
 - 安装依赖：`pnpm install`
@@ -32,11 +35,12 @@
 ```
 src/main/
 ├── java/com/staryu/
-│   ├── Main.java              # 嵌入式Tomcat启动入口
 │   ├── config/
-│   │   ├── WebConfig.java     # Web MVC配置
-│   │   └── DataSourceConfig.java # 数据源配置(读取PGDATABASE_URL)
-│   ├── entity/                # Hibernate实体类
+│   │   ├── WebConfig.java          # Web MVC配置
+│   │   ├── DataSourceConfig.java   # 数据源配置(自动检测MySQL/PostgreSQL)
+│   │   ├── SessionFactoryConfig.java # 动态Hibernate方言配置
+│   │   └── EmbeddedMain.java       # 嵌入式Tomcat启动入口(开发用)
+│   ├── entity/                     # Hibernate实体类
 │   │   ├── User.java
 │   │   ├── ModuleConfig.java
 │   │   ├── Room.java
@@ -47,12 +51,12 @@ src/main/
 │   │   ├── Order.java
 │   │   ├── Cart.java
 │   │   └── Address.java
-│   ├── dao/                   # 数据访问层(BaseDao + 各实体Dao)
-│   ├── service/               # 业务逻辑层(BusinessService)
-│   └── controller/            # SpringMVC控制器
-│       ├── AdminController.java  # 管理后台页面路由
-│       ├── ConfigController.java # 模块配置API
-│       ├── RoomController.java   # 房间API
+│   ├── dao/                        # 数据访问层(BaseDao + 各实体Dao)
+│   ├── service/                    # 业务逻辑层(BusinessService)
+│   └── controller/                 # SpringMVC控制器
+│       ├── AdminController.java    # 管理后台页面路由
+│       ├── ConfigController.java   # 模块配置API
+│       ├── RoomController.java     # 房间API
 │       ├── FoodController.java / FoodCategoryController.java
 │       ├── ProductController.java / ProductCategoryController.java
 │       ├── FruitTreeController.java
@@ -63,12 +67,12 @@ src/main/
 │       ├── AddressController.java
 │       └── StatsController.java
 ├── resources/
-│   ├── applicationContext.xml  # Spring IoC配置
-│   ├── spring-mvc.xml          # SpringMVC配置
-│   └── jdbc.properties         # JDBC参数(开发用)
+│   ├── applicationContext.xml      # Spring IoC配置(DataSource和SessionFactory由Java Config管理)
+│   ├── spring-mvc.xml              # SpringMVC配置
+│   └── jdbc.properties             # JDBC参数(开发用)
 └── webapp/
-    ├── WEB-INF/web.xml         # Servlet配置
-    ├── admin/                  # 管理后台HTML页面
+    ├── WEB-INF/web.xml             # Servlet配置
+    ├── admin/                      # 管理后台HTML页面
     │   ├── dashboard.html
     │   ├── rooms.html
     │   ├── food.html
@@ -78,7 +82,7 @@ src/main/
     │   ├── orders.html
     │   ├── users.html
     │   └── config.html
-    └── static/                 # 静态资源
+    └── static/                     # 静态资源
 ```
 
 ### staryu-uniapp
@@ -103,6 +107,13 @@ src/
 └── App.vue             # 根组件
 ```
 
+## 数据库
+- 支持 MySQL 和 PostgreSQL，通过环境变量自动检测
+- MYSQL_URL 环境变量 → MySQL（MySQLDialect）
+- PGDATABASE_URL 环境变量 → PostgreSQL（PostgreSQLDialect）
+- 均未设置 → 本地 MySQL 默认连接
+- 表结构见 init-db.sql（12张表+初始数据）
+
 ## 数据库表
 - `users` - 用户表
 - `module_config` - 模块配置表
@@ -121,3 +132,9 @@ src/
 - DAO基于Hibernate SessionFactory
 - 管理后台使用Element UI + jQuery AJAX
 - 前端API请求统一通过src/api/index.ts封装
+- WAR打包部署，支持外部Tomcat和嵌入式Tomcat两种启动方式
+
+## 部署方式
+- **外部Tomcat（生产推荐）**：将staryu-web.war部署到Tomcat 9的webapps/目录
+- **嵌入式Tomcat（开发用）**：通过EmbeddedMain.java直接启动
+- 详见 `.idea-setup.md` 中的完整部署说明

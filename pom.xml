@@ -81,6 +81,13 @@
             <version>8.0.33</version>
         </dependency>
 
+        <!-- PostgreSQL (for sandbox/Supabase environment) -->
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>42.6.0</version>
+        </dependency>
+
         <!-- Druid Connection Pool -->
         <dependency>
             <groupId>com.alibaba</groupId>
@@ -124,18 +131,16 @@
             <version>1.2.13</version>
         </dependency>
 
-        <!-- Embedded Tomcat (for standalone run, excluded from WAR) -->
+        <!-- Embedded Tomcat (included for standalone run, also in WAR for convenience) -->
         <dependency>
             <groupId>org.apache.tomcat.embed</groupId>
             <artifactId>tomcat-embed-core</artifactId>
             <version>9.0.89</version>
-            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.tomcat.embed</groupId>
             <artifactId>tomcat-embed-jasper</artifactId>
             <version>9.0.89</version>
-            <scope>provided</scope>
         </dependency>
 
         <!-- Lombok (optional) -->

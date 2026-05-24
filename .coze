@@ -3,8 +3,8 @@ requires = ["java-17"]
 
 [dev]
 build = ["bash", "-c", "service mysql start 2>/dev/null; mvn clean package -DskipTests"]
-run = ["bash", "-c", "service mysql start 2>/dev/null; cp target/staryu-web.war /tmp/ && cd /tmp && jar -xf staryu-web.war && java -cp 'WEB-INF/lib/*:WEB-INF/classes' -Dcatalina.base=/tmp com.staryu.config.EmbeddedMain"]
+run = ["bash", "-c", "service mysql start 2>/dev/null; mkdir -p /tmp/staryu-web && cd /tmp/staryu-web && jar -xf /workspace/projects/target/staryu-web.war && java -cp 'WEB-INF/lib/*:WEB-INF/classes' -Dcatalina.base=/tmp/staryu-web -Dserver.port=5000 com.staryu.config.EmbeddedMain"]
 
 [deploy]
 build = ["bash", "-c", "mvn clean package -DskipTests"]
-run = ["bash", "-c", "cp target/staryu-web.war /tmp/ && cd /tmp && jar -xf staryu-web.war && java -cp 'WEB-INF/lib/*:WEB-INF/classes' -Dcatalina.base=/tmp com.staryu.config.EmbeddedMain"]
+run = ["bash", "-c", "mkdir -p /tmp/staryu-web && cd /tmp/staryu-web && jar -xf /workspace/projects/target/staryu-web.war && java -cp 'WEB-INF/lib/*:WEB-INF/classes' -Dcatalina.base=/tmp/staryu-web -Dserver.port=5000 com.staryu.config.EmbeddedMain"]
