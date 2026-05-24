@@ -2,9 +2,9 @@
 requires = ["java-17"]
 
 [dev]
-build = ["bash", "-c", "mvn clean package -DskipTests"]
-run = ["bash", "-c", "export PGDATABASE_URL && java -jar target/staryu-web.jar --server.port=5000"]
+build = ["bash", "-c", "service mysql start 2>/dev/null; mvn clean package -DskipTests"]
+run = ["bash", "-c", "service mysql start 2>/dev/null; cp target/staryu-web.war /tmp/ && cd /tmp && jar -xf staryu-web.war && java -cp 'WEB-INF/lib/*:WEB-INF/classes' -Dcatalina.base=/tmp com.staryu.config.EmbeddedMain"]
 
 [deploy]
 build = ["bash", "-c", "mvn clean package -DskipTests"]
-run = ["bash", "-c", "export PGDATABASE_URL && java -jar target/staryu-web.jar --server.port=5000"]
+run = ["bash", "-c", "cp target/staryu-web.war /tmp/ && cd /tmp && jar -xf staryu-web.war && java -cp 'WEB-INF/lib/*:WEB-INF/classes' -Dcatalina.base=/tmp com.staryu.config.EmbeddedMain"]
