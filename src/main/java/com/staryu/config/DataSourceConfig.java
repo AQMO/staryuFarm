@@ -1,142 +1,134 @@
 package com.staryu.config;
 
-import com.alibaba.druid.pool.DruidDataSource;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 
-import javax.sql.DataSource;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
 
 /**
- * 数据源配置 - 自动检测并支持 MySQL 和 PostgreSQL
+ * 数据库环境变量覆盖配置
  * 
- * 优先级:
- *   1. MYSQL_URL 环境变量 → MySQL
- *   2. PGDATABASE_URL 环境变量 → PostgreSQL
- *   3. 默认 → 本地 MySQL
+ * 解析 MYSQL_URL / PGDATABASE_URL 环境变量，
+ * 将解析结果注入 Spring 上下文，覆盖 jdbc.properties 中的默认值。
+ * 
+ * applicationContext.xml 通过 ${db.url} 等占位符引用，
+ * 本配置优先级高于 jdbc.properties。
  */
-@Configuration
-public class DataSourceConfig {
+public class DataSourceConfig extends PropertyPlaceholderConfigurer {
 
-    @Bean
-    public DataSource dataSource() {
-        String mysqlUrl = System.getenv("MYSQL_URL");
-        String pgUrl = System.getenv("PGDATABASE_URL");
+    private static final String ENV_MYSQL = "MYSQL_URL";
+    private static final String ENV_PG = "PGDATABASE_URL";
 
-        String jdbcUrl;
-        String username;
-        String password;
-        String driverClass;
-        String dbType;
+    @Override
+    protected Properties mergeProperties() throws Exception {
+        Properties props = super.mergeProperties();
+
+        // 解析环境变量，覆盖 jdbc.properties 中的属性
+        String mysqlUrl = System.getenv(ENV_MYSQL);
+        String pgUrl = System.getenv(ENV_PG);
 
         if (mysqlUrl != null && !mysqlUrl.isEmpty()) {
-            // MYSQL_URL specified → use MySQL
-            dbType = "mysql";
-            driverClass = "com.mysql.cj.jdbc.Driver";
-            username = "staryu";
-            password = "staryu123";
-
-            if (mysqlUrl.startsWith("mysql://")) {
-                // Parse: mysql://user:password@host:port/dbname
-                String rest = mysqlUrl.replaceFirst("^mysql://", "");
-                int atIdx = rest.indexOf('@');
-                if (atIdx > 0) {
-                    String userPart = rest.substring(0, atIdx);
-                    rest = rest.substring(atIdx + 1);
-                    int colonIdx = userPart.indexOf(':');
-                    if (colonIdx > 0) {
-                        username = userPart.substring(0, colonIdx);
-                        password = userPart.substring(colonIdx + 1);
-                    } else {
-                        username = userPart;
-                    }
-                }
-                jdbcUrl = "jdbc:mysql://" + rest;
-                if (!jdbcUrl.contains("useSSL")) {
-                    jdbcUrl += (jdbcUrl.contains("?") ? "&" : "?") + "useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai&characterEncoding=UTF-8";
-                }
-            } else if (mysqlUrl.startsWith("jdbc:mysql://")) {
-                jdbcUrl = mysqlUrl;
-            } else {
-                throw new RuntimeException("Unsupported MYSQL_URL format: " + mysqlUrl);
-            }
+            applyMysql(props, mysqlUrl);
         } else if (pgUrl != null && !pgUrl.isEmpty()) {
-            // PGDATABASE_URL specified → use PostgreSQL
-            dbType = "postgresql";
-            driverClass = "org.postgresql.Driver";
-
-            if (pgUrl.startsWith("postgresql://")) {
-                // Parse: postgresql://user:password@host:port/dbname?params
-                String rest = pgUrl.replaceFirst("^postgresql://", "");
-                int atIdx = rest.indexOf('@');
-                username = "postgres";
-                password = "";
-                if (atIdx > 0) {
-                    String userPart = rest.substring(0, atIdx);
-                    rest = rest.substring(atIdx + 1);
-                    int colonIdx = userPart.indexOf(':');
-                    if (colonIdx > 0) {
-                        username = userPart.substring(0, colonIdx);
-                        password = userPart.substring(colonIdx + 1);
-                    } else {
-                        username = userPart;
-                    }
-                } else {
-                    throw new RuntimeException("Cannot parse PGDATABASE_URL: " + pgUrl);
-                }
-                jdbcUrl = "jdbc:postgresql://" + rest;
-            } else if (pgUrl.startsWith("jdbc:postgresql://")) {
-                jdbcUrl = pgUrl;
-                username = "postgres";
-                password = "";
-            } else {
-                throw new RuntimeException("Unsupported PGDATABASE_URL format: " + pgUrl);
-            }
-        } else {
-            // Default: local MySQL
-            dbType = "mysql";
-            driverClass = "com.mysql.cj.jdbc.Driver";
-            jdbcUrl = "jdbc:mysql://localhost:3306/staryu_farm?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai&characterEncoding=UTF-8";
-            username = "staryu";
-            password = "staryu123";
+            applyPostgresql(props, pgUrl);
         }
 
         System.out.println("========================================");
-        System.out.println("  DataSource Config");
-        System.out.println("  DB Type: " + dbType);
-        System.out.println("  JDBC URL: " + jdbcUrl);
-        System.out.println("  Username: " + username);
+        System.out.println("  DataSource Config (from applicationContext.xml)");
+        System.out.println("  DB Driver: " + props.getProperty("db.driver"));
+        System.out.println("  JDBC URL:  " + props.getProperty("db.url"));
+        System.out.println("  Username:  " + props.getProperty("db.username"));
+        System.out.println("  Dialect:   " + props.getProperty("hibernate.dialect"));
         System.out.println("========================================");
 
-        DruidDataSource ds = new DruidDataSource();
-        ds.setUrl(jdbcUrl);
-        ds.setUsername(username);
-        ds.setPassword(password);
-        ds.setDriverClassName(driverClass);
-        ds.setInitialSize(2);
-        ds.setMinIdle(2);
-        ds.setMaxActive(20);
-        ds.setMaxWait(60000);
-        ds.setTimeBetweenEvictionRunsMillis(60000);
-        ds.setMinEvictableIdleTimeMillis(300000);
-        ds.setValidationQuery("SELECT 1");
-        ds.setTestWhileIdle(true);
-        ds.setTestOnBorrow(false);
-        ds.setTestOnReturn(false);
-        return ds;
+        return props;
+    }
+
+    private void applyMysql(Properties props, String mysqlUrl) {
+        props.setProperty("db.driver", "com.mysql.cj.jdbc.Driver");
+        props.setProperty("hibernate.dialect", "org.hibernate.dialect.MySQLDialect");
+
+        String username = "staryu";
+        String password = "staryu123";
+        String jdbcUrl;
+
+        if (mysqlUrl.startsWith("mysql://")) {
+            String rest = mysqlUrl.replaceFirst("^mysql://", "");
+            int atIdx = rest.indexOf('@');
+            if (atIdx > 0) {
+                String userPart = rest.substring(0, atIdx);
+                rest = rest.substring(atIdx + 1);
+                int colonIdx = userPart.indexOf(':');
+                if (colonIdx > 0) {
+                    username = userPart.substring(0, colonIdx);
+                    password = userPart.substring(colonIdx + 1);
+                } else {
+                    username = userPart;
+                }
+            }
+            jdbcUrl = "jdbc:mysql://" + rest;
+            if (!jdbcUrl.contains("useSSL")) {
+                jdbcUrl += (jdbcUrl.contains("?") ? "&" : "?") + "useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai&characterEncoding=UTF-8";
+            }
+        } else if (mysqlUrl.startsWith("jdbc:mysql://")) {
+            jdbcUrl = mysqlUrl;
+        } else {
+            throw new RuntimeException("Unsupported MYSQL_URL format: " + mysqlUrl);
+        }
+
+        props.setProperty("db.url", jdbcUrl);
+        props.setProperty("db.username", username);
+        props.setProperty("db.password", password);
+    }
+
+    private void applyPostgresql(Properties props, String pgUrl) {
+        props.setProperty("db.driver", "org.postgresql.Driver");
+        props.setProperty("hibernate.dialect", "org.hibernate.dialect.PostgreSQLDialect");
+
+        String username = "postgres";
+        String password = "";
+        String jdbcUrl;
+
+        if (pgUrl.startsWith("postgresql://")) {
+            String rest = pgUrl.replaceFirst("^postgresql://", "");
+            int atIdx = rest.indexOf('@');
+            if (atIdx > 0) {
+                String userPart = rest.substring(0, atIdx);
+                rest = rest.substring(atIdx + 1);
+                int colonIdx = userPart.indexOf(':');
+                if (colonIdx > 0) {
+                    username = userPart.substring(0, colonIdx);
+                    password = userPart.substring(colonIdx + 1);
+                } else {
+                    username = userPart;
+                }
+            }
+            jdbcUrl = "jdbc:postgresql://" + rest;
+        } else if (pgUrl.startsWith("jdbc:postgresql://")) {
+            jdbcUrl = pgUrl;
+        } else {
+            throw new RuntimeException("Unsupported PGDATABASE_URL format: " + pgUrl);
+        }
+
+        props.setProperty("db.url", jdbcUrl);
+        props.setProperty("db.username", username);
+        props.setProperty("db.password", password);
     }
 
     /**
-     * Detect current database type for Hibernate dialect selection
+     * 检测当前数据库类型（供其他组件调用）
      */
     public static String detectDatabaseType() {
-        String mysqlUrl = System.getenv("MYSQL_URL");
-        String pgUrl = System.getenv("PGDATABASE_URL");
+        String mysqlUrl = System.getenv(ENV_MYSQL);
+        String pgUrl = System.getenv(ENV_PG);
         if (mysqlUrl != null && !mysqlUrl.isEmpty()) {
             return "mysql";
         } else if (pgUrl != null && !pgUrl.isEmpty()) {
             return "postgresql";
         }
-        return "mysql"; // default
+        return "mysql";
     }
 }

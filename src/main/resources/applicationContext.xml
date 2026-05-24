@@ -10,12 +10,58 @@
            http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd
            http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd">
 
+    <!-- 包扫描 -->
     <context:component-scan base-package="com.staryu"/>
+
+    <!-- ========== 数据库属性配置 ========== -->
+    <!-- DataSourceConfig 继承 PropertyPlaceholderConfigurer，加载 jdbc.properties 并支持环境变量覆盖 -->
+    <bean class="com.staryu.config.DataSourceConfig">
+        <property name="location" value="classpath:jdbc.properties"/>
+        <property name="ignoreUnresolvablePlaceholders" value="true"/>
+        <property name="order" value="1"/>
+    </bean>
+
+    <!-- ========== 数据源 (Druid 连接池) ========== -->
+    <bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource"
+          init-method="init" destroy-method="close">
+        <property name="driverClassName" value="${db.driver}"/>
+        <property name="url" value="${db.url}"/>
+        <property name="username" value="${db.username}"/>
+        <property name="password" value="${db.password}"/>
+        <property name="initialSize" value="${db.initialSize}"/>
+        <property name="minIdle" value="${db.minIdle}"/>
+        <property name="maxActive" value="${db.maxActive}"/>
+        <property name="maxWait" value="${db.maxWait}"/>
+        <property name="timeBetweenEvictionRunsMillis" value="${db.timeBetweenEvictionRunsMillis}"/>
+        <property name="minEvictableIdleTimeMillis" value="${db.minEvictableIdleTimeMillis}"/>
+        <property name="validationQuery" value="${db.validationQuery}"/>
+        <property name="testWhileIdle" value="true"/>
+        <property name="testOnBorrow" value="false"/>
+        <property name="testOnReturn" value="false"/>
+    </bean>
+
+    <!-- ========== Hibernate SessionFactory ========== -->
+    <bean id="sessionFactory" class="org.springframework.orm.hibernate5.LocalSessionFactoryBean">
+        <property name="dataSource" ref="dataSource"/>
+        <property name="packagesToScan" value="com.staryu.entity"/>
+        <property name="hibernateProperties">
+            <props>
+                <prop key="hibernate.dialect">${hibernate.dialect}</prop>
+                <prop key="hibernate.show_sql">${hibernate.show_sql}</prop>
+                <prop key="hibernate.format_sql">${hibernate.format_sql}</prop>
+                <prop key="hibernate.hbm2ddl.auto">update</prop>
+                <prop key="hibernate.current_session_context_class">org.springframework.orm.hibernate5.SpringSessionContext</prop>
+            </props>
+        </property>
+    </bean>
+
+    <!-- ========== 事务管理器 ========== -->
+    <bean id="transactionManager" class="org.springframework.orm.hibernate5.HibernateTransactionManager">
+        <property name="sessionFactory" ref="sessionFactory"/>
+    </bean>
+
+    <!-- 注解驱动事务 & AOP -->
     <tx:annotation-driven/>
     <aop:aspectj-autoproxy/>
-
-    <!-- DataSource configured in DataSourceConfig.java -->
-    <!-- SessionFactory and TransactionManager configured in SessionFactoryConfig.java -->
-    <!-- Dialect auto-detected: PostgreSQL when PGDATABASE_URL is set, MySQL otherwise -->
 
 </beans>
