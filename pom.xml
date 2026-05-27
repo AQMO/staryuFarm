@@ -131,16 +131,18 @@
             <version>1.2.13</version>
         </dependency>
 
-        <!-- Embedded Tomcat (included for standalone run, also in WAR for convenience) -->
+        <!-- Embedded Tomcat (only included when -Pembedded profile is active) -->
         <dependency>
             <groupId>org.apache.tomcat.embed</groupId>
             <artifactId>tomcat-embed-core</artifactId>
             <version>9.0.89</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.tomcat.embed</groupId>
             <artifactId>tomcat-embed-jasper</artifactId>
             <version>9.0.89</version>
+            <scope>provided</scope>
         </dependency>
 
         <!-- Lombok (optional) -->
@@ -159,6 +161,25 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+
+    <!-- Profiles: default=external Tomcat, embedded=standalone run -->
+    <profiles>
+        <profile>
+            <id>embedded</id>
+            <dependencies>
+                <dependency>
+                    <groupId>org.apache.tomcat.embed</groupId>
+                    <artifactId>tomcat-embed-core</artifactId>
+                    <version>9.0.89</version>
+                </dependency>
+                <dependency>
+                    <groupId>org.apache.tomcat.embed</groupId>
+                    <artifactId>tomcat-embed-jasper</artifactId>
+                    <version>9.0.89</version>
+                </dependency>
+            </dependencies>
+        </profile>
+    </profiles>
 
     <build>
         <finalName>staryu-web</finalName>
