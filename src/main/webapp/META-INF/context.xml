@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Context>
+    <!-- 跳过对 JAXB 等 Multi-Release JAR 的扫描，避免 Tomcat 9 + JDK 17 下的扫描错误 -->
+    <JarScanner>
+        <JarScanFilter defaultPluggabilityScan="false"
+                       defaultTldScan="false"
+                       pluggabilityScan="*.jar"
+                       tldScan="*.jar"/>
+    </JarScanner>
+</Context>

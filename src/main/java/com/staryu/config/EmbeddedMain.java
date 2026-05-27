@@ -1,6 +1,8 @@
 package com.staryu.config;
 
+import org.apache.catalina.Context;
 import org.apache.catalina.startup.Tomcat;
+import org.apache.tomcat.util.scan.StandardJarScanner;
 
 import java.io.File;
 
@@ -49,7 +51,15 @@ public class EmbeddedMain {
         System.out.println("  DocBase: " + docBase);
         System.out.println("========================================");
 
-        tomcat.addWebapp(contextPath, docBase);
+        Context ctx = tomcat.addWebapp(contextPath, docBase);
+
+        // Fix: 跳过 JAXB 等 Multi-Release JAR 的扫描，避免 Tomcat9 + JDK17 报错
+        // "Failed to scan jaxb-api-2.3.1.jar from classloader hierarchy"
+        StandardJarScanner scanner = new StandardJarScanner();
+        scanner.setScanBootstrapClassPath(false);
+        scanner.setScanClassPath(false);
+        scanner.setScanManifest(false);
+        ctx.setJarScanner(scanner);
 
         tomcat.start();
         System.out.println("Server started at http://localhost:" + port);
