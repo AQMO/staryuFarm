@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>星语农庄 - 登录</title>
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <style>
+        body { margin: 0; font-family: "Microsoft YaHei", sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+        .login-container { width: 400px; background: #fff; border-radius: 12px; padding: 40px; box-shadow: 0 20px 60px rgba(0,0,0,.15); }
+        .login-header { text-align: center; margin-bottom: 30px; }
+        .login-header h1 { margin: 0; font-size: 28px; color: #303133; }
+        .login-header h1 span { color: #67c23a; }
+        .login-header p { margin: 8px 0 0; color: #909399; font-size: 14px; }
+        .el-input { margin-bottom: 4px; }
+        .login-btn { width: 100%; margin-top: 10px; }
+        .footer { text-align: center; margin-top: 20px; color: #c0c4cc; font-size: 12px; }
+    </style>
+</head>
+<body>
+<div id="app">
+    <div class="login-container">
+        <div class="login-header">
+            <h1><span>星语</span>农庄</h1>
+            <p>管理后台</p>
+        </div>
+        <el-form :model="form" :rules="rules" ref="loginForm" @submit.native.prevent="handleLogin">
+            <el-form-item prop="username">
+                <el-input v-model="form.username" prefix-icon="el-icon-user" placeholder="请输入用户名" @keyup.enter.native="handleLogin"></el-input>
+            </el-form-item>
+            <el-form-item prop="password">
+                <el-input v-model="form.password" prefix-icon="el-icon-lock" placeholder="请输入密码" type="password" @keyup.enter.native="handleLogin"></el-input>
+            </el-form-item>
+            <el-form-item>
+                <el-button type="primary" class="login-btn" :loading="loading" @click="handleLogin">登 录</el-button>
+            </el-form-item>
+        </el-form>
+        <div class="footer">星语农庄管理系统 v1.0</div>
+    </div>
+</div>
+<script src="https://unpkg.com/vue@2/dist/vue.js"></script>
+<script src="https://unpkg.com/element-ui/lib/index.js"></script>
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<script>
+new Vue({
+    el: '#app',
+    data() {
+        return {
+            form: { username: '', password: '' },
+            rules: {
+                username: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
+                password: [{ required: true, message: '请输入密码', trigger: 'blur' }]
+            },
+            loading: false
+        }
+    },
+    methods: {
+        handleLogin() {
+            this.$refs.loginForm.validate((valid) => {
+                if (!valid) return;
+                this.loading = true;
+                axios.post('/api/auth/login', this.form)
+                    .then(res => {
+                        if (res.data.error) {
+                            this.$message.error(res.data.error);
+                        } else {
+                            this.$message.success('登录成功');
+                            setTimeout(() => { window.location.href = '/admin/dashboard'; }, 500);
+                        }
+                    })
+                    .catch(err => {
+                        this.$message.error('登录失败，请检查网络');
+                    })
+                    .finally(() => { this.loading = false; });
+            });
+        }
+    }
+});
+</script>
+</body>
+</html>

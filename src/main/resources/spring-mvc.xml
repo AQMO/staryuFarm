@@ -11,6 +11,14 @@
     <mvc:annotation-driven/>
     <context:component-scan base-package="com.staryu.controller"/>
 
+    <!-- 登录拦截器 -->
+    <mvc:interceptors>
+        <mvc:interceptor>
+            <mvc:mapping path="/admin/**"/>
+            <bean class="com.staryu.interceptor.LoginInterceptor"/>
+        </mvc:interceptor>
+    </mvc:interceptors>
+
     <!-- Static resources - admin HTML pages and static assets -->
     <mvc:resources mapping="/admin/*.html" location="/admin/"/>
     <mvc:resources mapping="/static/**" location="/static/"/>

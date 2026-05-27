@@ -7,11 +7,12 @@ USE staryu_farm;
 -- 用户表
 CREATE TABLE IF NOT EXISTS users (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    username VARCHAR(50) NOT NULL UNIQUE,
-    password VARCHAR(100) NOT NULL,
+    username VARCHAR(50) UNIQUE,
+    password VARCHAR(100),
+    openid VARCHAR(100),
     nickname VARCHAR(50),
-    phone VARCHAR(20),
     avatar VARCHAR(500),
+    phone VARCHAR(20),
     role VARCHAR(20) DEFAULT 'user',
     status INT DEFAULT 1,
     created_at DATETIME,
@@ -175,7 +176,14 @@ CREATE TABLE IF NOT EXISTS address (
     updated_at DATETIME
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- 初始模块配置数据
+-- ===== 初始数据 =====
+
+-- 管理员账号 (用户名: admin, 密码: admin123)
+INSERT INTO users (username, password, nickname, role, status, created_at) VALUES
+  ('admin', 'admin123', '系统管理员', 'admin', 1, NOW())
+ON DUPLICATE KEY UPDATE nickname=VALUES(nickname);
+
+-- 模块配置
 INSERT INTO module_config (module_key, module_name, is_enabled, sort, icon, description) VALUES
   ('room', '房间预订', 1, 1, 'home', '农庄房间在线预订'),
   ('food', '在线点餐', 1, 2, 'utensils', '农庄特色菜品在线点餐'),

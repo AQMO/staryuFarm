@@ -10,4 +10,8 @@ public class UserDao extends BaseDao<User, Integer> {
     public User findByOpenid(String openid) {
         return findByField("openid", openid).stream().findFirst().orElse(null);
     }
+
+    public User findByUsername(String username) {
+        return findByField("username", username).stream().findFirst().orElse(null);
+    }
 }

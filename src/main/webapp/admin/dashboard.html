@@ -50,7 +50,10 @@
         <div class="main-content">
             <div class="header">
                 <h2>仪表盘</h2>
-                <span style="color:#909399">欢迎回来，管理员</span>
+                <div style="display:flex;align-items:center;gap:16px">
+                    <span style="color:#909399">欢迎回来，{{ adminName }}</span>
+                    <el-button size="mini" type="text" @click="logout">退出登录</el-button>
+                </div>
             </div>
             <div class="content">
                 <div class="stat-cards">
@@ -99,14 +102,18 @@
 <script>
 new Vue({
     el: '#app',
-    data() { return { stats: { counts: {} }, modules: [] }; },
+    data() { return { stats: { counts: {} }, modules: [], adminName: '管理员' }; },
     created() {
         $.getJSON('/api/stats', d => { this.stats = d; });
         $.getJSON('/api/config', d => { this.modules = d.data || []; });
+        $.getJSON('/api/auth/current', d => { if (d.data) this.adminName = d.data.nickname || d.data.username || '管理员'; });
     },
     methods: {
         toggleModule(m) {
             $.ajax({ url: '/api/config/' + m.id, method: 'PUT', contentType: 'application/json', data: JSON.stringify(m), success: () => { this.$message.success('更新成功'); }, error: () => { this.$message.error('更新失败'); } });
+        },
+        logout() {
+            $.ajax({ url: '/api/auth/logout', method: 'POST', success: () => { window.location.href = '/admin/login'; } });
         }
     }
 });

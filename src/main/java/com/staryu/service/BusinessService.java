@@ -151,6 +151,7 @@ public class BusinessService {
     public List<User> getAllUsers() { return userDao.findAll(); }
     public User getUserById(Integer id) { return userDao.findById(id).orElse(null); }
     public User saveUser(User user) { return userDao.save(user); }
+    public User findUserByUsername(String username) { return userDao.findByUsername(username); }
 
     // ===== Stats =====
     public Map<String, Object> getStats() {

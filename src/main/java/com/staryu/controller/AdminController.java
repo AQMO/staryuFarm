@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 /**
  * 管理后台页面控制器
- * 重定向到静态HTML页面(使用Element UI + jQuery + Vue2构建)
+ * 重定向到静态HTML页面(使用Element UI + jQuery构建)
  */
 @Controller
 @RequestMapping("/admin")
@@ -15,6 +15,11 @@ public class AdminController {
     @GetMapping({"", "/"})
     public String index() {
         return "redirect:/admin/dashboard.html";
+    }
+
+    @GetMapping("/login")
+    public String login() {
+        return "redirect:/admin/login.html";
     }
 
     @GetMapping("/dashboard")
