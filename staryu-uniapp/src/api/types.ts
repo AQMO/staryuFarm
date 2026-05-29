@@ -1,34 +1,14 @@
-// Common entity types for API responses
-
-export interface ModuleItem {
-  id: number
-  moduleKey: string
-  moduleName: string
-  isEnabled: boolean
-  sort: number
-  icon: string
-  description: string
-  updatedAt?: string | null
-}
-
+// 通用类型定义
 export interface Room {
   id: number
   name: string
   price: number
   pic: string
   capacity: number
-  facility?: string | null
+  facility: string
   stock: number
   status: number
-  description?: string | null
-  createdAt?: string
-  updatedAt?: string | null
-}
-
-export interface FoodCategory {
-  id: number
-  name: string
-  sort?: number
+  description?: string
   createdAt?: string
 }
 
@@ -38,17 +18,16 @@ export interface Food {
   price: number
   pic: string
   categoryId: number
-  description?: string | null
+  description?: string
   status: number
-  sales?: number
-  createdAt?: string
+  categoryName?: string
 }
 
-export interface ProductCategory {
+export interface FoodCategory {
   id: number
   name: string
-  sort?: number
-  createdAt?: string
+  sort: number
+  icon?: string
 }
 
 export interface Product {
@@ -57,62 +36,98 @@ export interface Product {
   price: number
   pic: string
   categoryId: number
-  description?: string | null
-  stock?: number
-  sales?: number
+  stock: number
   status: number
-  createdAt?: string
+  description?: string
+  unit: string
+  categoryName?: string
+}
+
+export interface ProductCategory {
+  id: number
+  name: string
+  sort: number
+  icon?: string
 }
 
 export interface FruitTree {
   id: number
   name: string
-  variety?: string | null
+  price: number
   pic: string
-  annualRent: number
-  description?: string | null
+  variety: string
+  age: number
   status: number
-  createdAt?: string
+  description?: string
+  leasePeriod?: string
 }
 
 export interface Plot {
   id: number
   name: string
-  area?: number | null
+  price: number
   pic: string
-  annualRent: number
-  description?: string | null
+  area: number
   status: number
-  createdAt?: string
+  description?: string
+  leasePeriod?: string
 }
 
 export interface Order {
   id: number
   userId: number
-  orderType: string
+  orderNo: string
+  type: string
   itemId: number
   itemName: string
-  quantity?: number
-  totalAmount: number
+  quantity: number
+  totalPrice: number
   status: number
+  addressId?: number
+  remark?: string
   createdAt?: string
-  updatedAt?: string | null
+}
+
+export interface CartItem {
+  id: number
+  userId: number
+  type: string
+  itemId: number
+  itemName: string
+  itemPic: string
+  itemPrice: number
+  quantity: number
 }
 
 export interface User {
   id: number
-  phone: string
-  nickname?: string | null
-  avatar?: string | null
-  token?: string
+  openid?: string
+  nickname: string
+  avatar?: string
+  phone?: string
+  username?: string
+  role?: string
+  status?: number
 }
 
-export interface CartItemData {
-  id?: number
-  productId: number
+export interface Address {
+  id: number
+  userId: number
   name: string
-  price: number
-  pic: string
-  quantity: number
-  type: 'food' | 'product'
+  phone: string
+  province: string
+  city: string
+  district: string
+  detail: string
+  isDefault: number
+}
+
+export interface ModuleConfig {
+  id: number
+  moduleKey: string
+  moduleName: string
+  isEnabled: boolean
+  sort: number
+  icon: string
+  description?: string
 }

@@ -1,41 +1,53 @@
 import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
 
 export const useUserStore = defineStore('user', () => {
-  const userInfo = ref<Record<string, unknown> | null>(null)
-  const token = ref('')
+  const userInfo = ref<UniApp.GetUserInfoRes | null>(null)
+  const userId = ref<number>(0)
+  const nickname = ref('')
+  const avatar = ref('')
 
-  const isLoggedIn = computed(() => !!userInfo.value)
+  function setUser(info: any) {
+    userInfo.value = info
+    userId.value = info.id || 0
+    nickname.value = info.nickname || ''
+    avatar.value = info.avatar || ''
+    uni.setStorageSync('userInfo', JSON.stringify(info))
+    uni.setStorageSync('userId', info.id || 0)
+  }
 
-  function setLogin(data: { user: Record<string, unknown>; token?: string }) {
-    userInfo.value = data.user
-    token.value = data.token || ''
-    if (data.token) {
-      localStorage.setItem('staryu_token', data.token)
+  function loadFromStorage() {
+    try {
+      const stored = uni.getStorageSync('userInfo')
+      if (stored) {
+        const info = JSON.parse(stored)
+        userInfo.value = info
+        userId.value = info.id || 0
+        nickname.value = info.nickname || ''
+        avatar.value = info.avatar || ''
+      }
+      const storedId = uni.getStorageSync('userId')
+      if (storedId) userId.value = storedId
+    } catch (e) {
+      console.error('Failed to load user from storage', e)
     }
-    localStorage.setItem('staryu_user', JSON.stringify(data.user))
   }
 
   function logout() {
     userInfo.value = null
-    token.value = ''
-    localStorage.removeItem('staryu_token')
-    localStorage.removeItem('staryu_user')
+    userId.value = 0
+    nickname.value = ''
+    avatar.value = ''
+    uni.removeStorageSync('userInfo')
+    uni.removeStorageSync('userId')
   }
 
-  function loadFromStorage() {
-    const saved = localStorage.getItem('staryu_user')
-    if (saved) {
-      try {
-        userInfo.value = JSON.parse(saved)
-        token.value = localStorage.getItem('staryu_token') || ''
-      } catch {
-        logout()
-      }
-    }
+  function isLoggedIn() {
+    return userId.value > 0
   }
 
+  // 初始化时加载
   loadFromStorage()
 
-  return { userInfo, token, isLoggedIn, setLogin, logout, loadFromStorage }
+  return { userInfo, userId, nickname, avatar, setUser, loadFromStorage, logout, isLoggedIn }
 })

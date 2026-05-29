@@ -31,3 +31,4 @@ dist/
 .env.local
 dependency-reduced-pom.xml
 .cozeproj/reduction
+staryu-uniapp-vue-backup/

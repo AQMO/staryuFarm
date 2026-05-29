@@ -1,36 +1,31 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import { getConfig } from '@/api'
-
-interface ModuleItem {
-  id: number
-  moduleKey: string
-  moduleName: string
-  isEnabled: boolean
-  sort: number
-  icon: string
-  description: string
-}
+import type { ModuleConfig } from '@/api/types'
+import { getModuleConfig } from '@/api'
 
 export const useConfigStore = defineStore('config', () => {
-  const modules = ref<ModuleItem[]>([])
+  const modules = ref<ModuleConfig[]>([])
   const loaded = ref(false)
 
   async function loadConfig() {
     if (loaded.value) return
     try {
-      const res = await getConfig() as { data: ModuleItem[] }
+      const res = await getModuleConfig()
       modules.value = res.data || []
       loaded.value = true
     } catch (e) {
-      console.error('Load config failed:', e)
+      console.error('Failed to load config', e)
     }
   }
 
-  function isModuleEnabled(key: string): boolean {
-    const m = modules.value.find((item) => item.moduleKey === key)
-    return m ? m.isEnabled : true
+  function getModule(key: string): ModuleConfig | undefined {
+    return modules.value.find(m => m.moduleKey === key)
   }
 
-  return { modules, loaded, loadConfig, isModuleEnabled }
+  function isModuleEnabled(key: string): boolean {
+    const m = getModule(key)
+    return m ? m.isEnabled : false
+  }
+
+  return { modules, loaded, loadConfig, getModule, isModuleEnabled }
 })

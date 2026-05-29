@@ -1,97 +1,90 @@
-import axios from 'axios'
+// uni-app 请求封装
+const BASE_URL = ''
 
-const api = axios.create({
-  baseURL: '/api',
-  timeout: 10000,
-  headers: { 'Content-Type': 'application/json' },
-})
+interface RequestOptions {
+  url: string
+  method?: 'GET' | 'POST' | 'PUT' | 'DELETE'
+  data?: any
+  header?: Record<string, string>
+}
 
-// Response interceptor
-api.interceptors.response.use(
-  (res) => res.data,
-  (err) => {
-    console.error('API Error:', err)
-    return Promise.reject(err)
-  }
-)
+interface ApiResponse<T = any> {
+  data: T
+  error?: string
+  message?: string
+}
 
-// ========== Config ==========
-export const getConfig = () => api.get('/config')
-export const updateConfig = (id: number, data: Record<string, unknown>) => api.put(`/config/${id}`, data)
+function request<T = any>(options: RequestOptions): Promise<ApiResponse<T>> {
+  return new Promise((resolve, reject) => {
+    uni.request({
+      url: BASE_URL + options.url,
+      method: options.method || 'GET',
+      data: options.data,
+      header: {
+        'Content-Type': 'application/json',
+        ...options.header
+      },
+      success: (res: any) => {
+        if (res.statusCode === 200) {
+          resolve(res.data as ApiResponse<T>)
+        } else if (res.statusCode === 401) {
+          // 未登录，跳转登录页
+          uni.removeStorageSync('userInfo')
+          uni.reLaunch({ url: '/pages/profile/index' })
+          reject(new Error('未登录'))
+        } else {
+          reject(new Error(`请求失败: ${res.statusCode}`))
+        }
+      },
+      fail: (err: any) => {
+        uni.showToast({ title: '网络请求失败', icon: 'none' })
+        reject(err)
+      }
+    })
+  })
+}
 
-// ========== Rooms ==========
-export const getRooms = () => api.get('/rooms')
-export const getRoom = (id: number) => api.get(`/rooms/${id}`)
-export const createRoom = (data: Record<string, unknown>) => api.post('/rooms', data)
-export const updateRoom = (id: number, data: Record<string, unknown>) => api.put(`/rooms/${id}`, data)
-export const deleteRoom = (id: number) => api.delete(`/rooms/${id}`)
+// ============ 房间 ============
+export const getRooms = () => request({ url: '/api/rooms' })
+export const getRoom = (id: number) => request({ url: `/api/rooms/${id}` })
 
-// ========== Food ==========
-export const getFoods = (categoryId?: number) => api.get('/food', { params: { categoryId } })
-export const getFood = (id: number) => api.get(`/food/${id}`)
-export const createFood = (data: Record<string, unknown>) => api.post('/food', data)
-export const updateFood = (id: number, data: Record<string, unknown>) => api.put(`/food/${id}`, data)
-export const deleteFood = (id: number) => api.delete(`/food/${id}`)
+// ============ 菜品 ============
+export const getFoods = () => request({ url: '/api/food' })
+export const getFoodCategories = () => request({ url: '/api/food-category' })
 
-// ========== Food Category ==========
-export const getFoodCategories = () => api.get('/food-category')
-export const createFoodCategory = (data: Record<string, unknown>) => api.post('/food-category', data)
-export const updateFoodCategory = (id: number, data: Record<string, unknown>) => api.put(`/food-category/${id}`, data)
-export const deleteFoodCategory = (id: number) => api.delete(`/food-category/${id}`)
+// ============ 农产品 ============
+export const getProducts = () => request({ url: '/api/products' })
+export const getProduct = (id: number) => request({ url: `/api/products/${id}` })
+export const getProductCategories = () => request({ url: '/api/product-category' })
 
-// ========== Products ==========
-export const getProducts = (categoryId?: number) => api.get('/products', { params: { categoryId } })
-export const getProduct = (id: number) => api.get(`/products/${id}`)
-export const createProduct = (data: Record<string, unknown>) => api.post('/products', data)
-export const updateProduct = (id: number, data: Record<string, unknown>) => api.put(`/products/${id}`, data)
-export const deleteProduct = (id: number) => api.delete(`/products/${id}`)
+// ============ 果木 ============
+export const getFruitTrees = () => request({ url: '/api/fruit-trees' })
 
-// ========== Product Category ==========
-export const getProductCategories = () => api.get('/product-category')
-export const createProductCategory = (data: Record<string, unknown>) => api.post('/product-category', data)
-export const updateProductCategory = (id: number, data: Record<string, unknown>) => api.put(`/product-category/${id}`, data)
-export const deleteProductCategory = (id: number) => api.delete(`/product-category/${id}`)
+// ============ 地块 ============
+export const getPlots = () => request({ url: '/api/plots' })
 
-// ========== Fruit Trees ==========
-export const getFruitTrees = () => api.get('/fruit-trees')
-export const getFruitTree = (id: number) => api.get(`/fruit-trees/${id}`)
-export const createFruitTree = (data: Record<string, unknown>) => api.post('/fruit-trees', data)
-export const updateFruitTree = (id: number, data: Record<string, unknown>) => api.put(`/fruit-trees/${id}`, data)
-export const deleteFruitTree = (id: number) => api.delete(`/fruit-trees/${id}`)
+// ============ 订单 ============
+export const getOrders = (params?: any) => request({ url: '/api/orders', data: params })
+export const createOrder = (data: any) => request({ url: '/api/orders', method: 'POST', data })
 
-// ========== Plots ==========
-export const getPlots = () => api.get('/plots')
-export const getPlot = (id: number) => api.get(`/plots/${id}`)
-export const createPlot = (data: Record<string, unknown>) => api.post('/plots', data)
-export const updatePlot = (id: number, data: Record<string, unknown>) => api.put(`/plots/${id}`, data)
-export const deletePlot = (id: number) => api.delete(`/plots/${id}`)
+// ============ 购物车 ============
+export const getCart = (userId: number) => request({ url: '/api/cart', data: { userId } })
+export const addToCart = (data: any) => request({ url: '/api/cart', method: 'POST', data })
+export const updateCartItem = (id: number, data: any) => request({ url: `/api/cart/${id}`, method: 'PUT', data })
+export const deleteCartItem = (id: number) => request({ url: `/api/cart/${id}`, method: 'DELETE' })
 
-// ========== Orders ==========
-export const getOrders = (params?: Record<string, unknown>) => api.get('/orders', { params })
-export const getOrder = (id: number) => api.get(`/orders/${id}`)
-export const createOrder = (data: Record<string, unknown>) => api.post('/orders', data)
-export const updateOrder = (id: number, data: Record<string, unknown>) => api.put(`/orders/${id}`, data)
+// ============ 用户 ============
+export const getUsers = () => request({ url: '/api/users' })
+export const login = (data: { code: string }) => request({ url: '/api/users/login', method: 'POST', data })
 
-// ========== Cart ==========
-export const getCart = (userId: number) => api.get('/cart', { params: { userId } })
-export const addToCart = (data: Record<string, unknown>) => api.post('/cart', data)
-export const updateCartItem = (id: number, data: Record<string, unknown>) => api.put(`/cart/${id}`, data)
-export const deleteCartItem = (id: number) => api.delete(`/cart/${id}`)
-export const clearCart = (userId: number) => api.delete('/cart', { params: { userId } })
+// ============ 地址 ============
+export const getAddresses = (userId: number) => request({ url: '/api/address', data: { userId } })
+export const addAddress = (data: any) => request({ url: '/api/address', method: 'POST', data })
+export const updateAddress = (id: number, data: any) => request({ url: `/api/address/${id}`, method: 'PUT', data })
+export const deleteAddress = (id: number) => request({ url: `/api/address/${id}`, method: 'DELETE' })
 
-// ========== Users ==========
-export const login = (data: Record<string, unknown>) => api.post('/users/login', data)
-export const register = (data: Record<string, unknown>) => api.post('/users', data)
-export const getUser = (id: number) => api.get(`/users/${id}`)
-export const updateUser = (id: number, data: Record<string, unknown>) => api.put(`/users/${id}`, data)
+// ============ 配置 ============
+export const getModuleConfig = () => request({ url: '/api/config' })
 
-// ========== Address ==========
-export const getAddresses = (userId: number) => api.get('/address', { params: { userId } })
-export const createAddress = (data: Record<string, unknown>) => api.post('/address', data)
-export const updateAddress = (id: number, data: Record<string, unknown>) => api.put(`/address/${id}`, data)
-export const deleteAddress = (id: number) => api.delete(`/address/${id}`)
-
-// ========== Stats ==========
-export const getStats = () => api.get('/stats')
-
-export default api
+// ============ 统计 ============
+export const getStats = () => request({ url: '/api/stats' })
