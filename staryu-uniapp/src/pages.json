@@ -1,0 +1,99 @@
+{
+  "pages": [
+    {
+      "path": "pages/home/index",
+      "style": {
+        "navigationBarTitleText": "星语农庄",
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/rooms/index",
+      "style": {
+        "navigationBarTitleText": "房间预订",
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/rooms/detail",
+      "style": {
+        "navigationBarTitleText": "房间详情",
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/food/index",
+      "style": {
+        "navigationBarTitleText": "在线点餐",
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/shop/index",
+      "style": {
+        "navigationBarTitleText": "农产品商城",
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/shop/detail",
+      "style": {
+        "navigationBarTitleText": "产品详情",
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/rent/index",
+      "style": {
+        "navigationBarTitleText": "租赁中心",
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/orders/index",
+      "style": {
+        "navigationBarTitleText": "我的订单",
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/profile/index",
+      "style": {
+        "navigationBarTitleText": "个人中心",
+        "navigationStyle": "custom"
+      }
+    }
+  ],
+  "globalStyle": {
+    "navigationBarTextStyle": "white",
+    "navigationBarTitleText": "星语农庄",
+    "navigationBarBackgroundColor": "#16a34a",
+    "backgroundColor": "#f9fafb"
+  },
+  "tabBar": {
+    "color": "#9ca3af",
+    "selectedColor": "#16a34a",
+    "backgroundColor": "#ffffff",
+    "borderStyle": "black",
+    "list": [
+      {
+        "pagePath": "pages/home/index",
+        "text": "首页",
+        "iconPath": "static/tabbar/home.png",
+        "selectedIconPath": "static/tabbar/home-active.png"
+      },
+      {
+        "pagePath": "pages/orders/index",
+        "text": "订单",
+        "iconPath": "static/tabbar/order.png",
+        "selectedIconPath": "static/tabbar/order-active.png"
+      },
+      {
+        "pagePath": "pages/profile/index",
+        "text": "我的",
+        "iconPath": "static/tabbar/profile.png",
+        "selectedIconPath": "static/tabbar/profile-active.png"
+      }
+    ]
+  }
+}

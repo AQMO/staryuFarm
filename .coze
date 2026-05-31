@@ -2,9 +2,9 @@
 requires = ["java-17"]
 
 [dev]
-build = ["bash", "-c", "mvn clean package -DskipTests -Pembedded"]
-run = ["bash", "-c", "mkdir -p /tmp/staryu-web && cd /tmp/staryu-web && jar -xf /workspace/projects/target/staryu-web.war && java -cp 'WEB-INF/lib/*:WEB-INF/classes' -Dcatalina.base=/tmp/staryu-web -Dserver.port=5000 com.staryu.config.EmbeddedMain"]
+build = ["bash", "-c", "cd staryu-web && mvn clean package -DskipTests -Pembedded"]
+run = ["bash", "-c", "mkdir -p /tmp/staryu-web && cd /tmp/staryu-web && jar -xf /workspace/projects/staryu-web/target/staryu-web.war && java -cp 'WEB-INF/lib/*:WEB-INF/classes' -Dcatalina.base=/tmp/staryu-web -Dserver.port=5000 com.staryu.config.EmbeddedMain"]
 
 [deploy]
-build = ["bash", "-c", "mvn clean package -DskipTests -Pembedded"]
-run = ["bash", "-c", "mkdir -p /tmp/staryu-web && cd /tmp/staryu-web && jar -xf /workspace/projects/target/staryu-web.war && java -cp 'WEB-INF/lib/*:WEB-INF/classes' -Dcatalina.base=/tmp/staryu-web -Dserver.port=5000 com.staryu.config.EmbeddedMain"]
+build = ["bash", "-c", "cd staryu-web && mvn clean package -DskipTests -Pembedded"]
+run = ["bash", "-c", "mkdir -p /tmp/staryu-web && cd /tmp/staryu-web && jar -xf /workspace/projects/staryu-web/target/staryu-web.war && java -cp 'WEB-INF/lib/*:WEB-INF/classes' -Dcatalina.base=/tmp/staryu-web -Dserver.port=5000 com.staryu.config.EmbeddedMain"]

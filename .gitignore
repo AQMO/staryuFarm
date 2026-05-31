@@ -20,6 +20,8 @@ Thumbs.db
 # Node (for staryu-uniapp)
 node_modules/
 dist/
+unpackage/
+.hbuilderx/
 
 # Build artifacts
 *.jar
@@ -31,4 +33,3 @@ dist/
 .env.local
 dependency-reduced-pom.xml
 .cozeproj/reduction
-staryu-uniapp-vue-backup/
