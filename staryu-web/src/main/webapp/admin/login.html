@@ -64,6 +64,13 @@ new Vue({
                         if (res.data.error) {
                             this.$message.error(res.data.error);
                         } else {
+                            // 存储用户信息和菜单到 localStorage
+                            if (res.data.data) {
+                                localStorage.setItem('adminUser', JSON.stringify(res.data.data));
+                            }
+                            if (res.data.menus) {
+                                localStorage.setItem('adminMenus', JSON.stringify(res.data.menus));
+                            }
                             this.$message.success('登录成功');
                             setTimeout(() => { window.location.href = '/admin/dashboard'; }, 500);
                         }
