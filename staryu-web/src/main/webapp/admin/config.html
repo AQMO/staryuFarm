@@ -24,15 +24,10 @@
     <div class="app-container">
         <div class="sidebar">
             <div class="logo"><span>星语</span>农庄</div>
-            <a href="/admin/dashboard" class="menu-item">📊 仪表盘</a>
-            <a href="/admin/rooms" class="menu-item">🏠 房间管理</a>
-            <a href="/admin/food" class="menu-item">🍽 菜品管理</a>
-            <a href="/admin/products" class="menu-item">🛍 农产品管理</a>
-            <a href="/admin/fruit-trees" class="menu-item">🌳 果木管理</a>
-            <a href="/admin/plots" class="menu-item">🗺 地块管理</a>
-            <a href="/admin/orders" class="menu-item">📋 订单管理</a>
-            <a href="/admin/users" class="menu-item">👥 用户管理</a>
-            <a href="/admin/config" class="menu-item active">⚙ 模块配置</a>
+            <a v-for="menu in sidebarMenus" :key="menu.id"
+               :href="menu.url" :class="['menu-item', currentMenu === menu.menuKey ? 'active' : '']">
+               {{ menu.icon }} {{ menu.name }}
+            </a>
         </div>
         <div class="main-content">
             <div class="header"><h2>模块配置</h2></div>
@@ -58,13 +53,21 @@
 <script src="https://unpkg.com/vue@2/dist/vue.js"></script>
 <script src="https://unpkg.com/element-ui/lib/index.js"></script>
 <script src="https://unpkg.com/jquery@3/dist/jquery.min.js"></script>
+<script src="/static/js/admin-common.js"></script>
 <script>
 new Vue({
     el: '#app',
-    data() { return { modules: [] }; },
-    created() { this.loadList(); },
+    data() { return {
+            currentMenu: \'config',
+            sidebarMenus: [], modules: [] }; },
+    created() { this.loadSidebar(); this.loadList(); },
     methods: {
-        loadList() { $.getJSON('/api/config', d => { this.modules = d.data || []; }); },
+        
+        loadSidebar() {
+            $.getJSON('/api/menus/tree', (d) => {
+                this.sidebarMenus = d.data || [];
+            });
+        },loadList() { $.getJSON('/api/config', d => { this.modules = d.data || []; }); },
         saveRow(m) {
             $.ajax({ url: '/api/config/' + m.id, method: 'PUT', contentType: 'application/json', data: JSON.stringify(m), success: () => { this.$message.success('更新成功'); }, error: () => { this.$message.error('更新失败'); } });
         }

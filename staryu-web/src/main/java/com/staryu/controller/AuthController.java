@@ -47,8 +47,9 @@ public class AuthController {
 
         // 登录成功，存入 session
         session.setAttribute("adminUser", user);
+        session.setAttribute("userRole", user.getRole());
 
-        // 返回用户信息（不返回密码）
+        // 返回用户信息和菜单权限（不返回密码）
         Map<String, Object> userInfo = new LinkedHashMap<>();
         userInfo.put("id", user.getId());
         userInfo.put("username", user.getUsername());
@@ -56,6 +57,7 @@ public class AuthController {
         userInfo.put("role", user.getRole());
         userInfo.put("avatar", user.getAvatar());
         result.put("data", userInfo);
+        result.put("menus", service.getMenusByRole(user.getRole()));
         result.put("message", "登录成功");
         return result;
     }
@@ -78,6 +80,7 @@ public class AuthController {
         userInfo.put("role", user.getRole());
         userInfo.put("avatar", user.getAvatar());
         result.put("data", userInfo);
+        result.put("menus", service.getMenusByRole(user.getRole()));
         return result;
     }
 

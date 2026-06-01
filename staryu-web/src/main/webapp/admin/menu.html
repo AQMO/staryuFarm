@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>菜单管理 - 星语农庄</title>
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <style>
+        body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: #f5f7fa; }
+        .app-header { background: #16a34a; color: #fff; padding: 0 20px; height: 50px; display: flex; align-items: center; justify-content: space-between; }
+        .app-header h2 { margin: 0; font-size: 16px; }
+        .app-header .user-info { font-size: 14px; }
+        .app-header .user-info a { color: #fff; cursor: pointer; text-decoration: underline; }
+        .main-content { padding: 20px; }
+        .toolbar { margin-bottom: 15px; }
+    </style>
+</head>
+<body>
+<div id="app">
+    <div class="app-header">
+        <h2>星语农庄管理后台</h2>
+        <div class="user-info">
+            {{ adminName }} |
+            <a @click="logout">退出登录</a>
+        </div>
+    </div>
+    <div class="main-content">
+        <el-card>
+            <div slot="header">
+                <span>菜单管理</span>
+                <el-button style="float: right" type="primary" size="small" @click="handleAdd">新增菜单</el-button>
+            </div>
+            <el-table :data="menus" border style="width: 100%">
+                <el-table-column prop="id" label="ID" width="60"></el-table-column>
+                <el-table-column prop="name" label="菜单名称" width="150"></el-table-column>
+                <el-table-column prop="path" label="路由路径" width="180"></el-table-column>
+                <el-table-column prop="icon" label="图标" width="100">
+                    <template slot-scope="scope">
+                        <i :class="scope.row.icon"></i> {{ scope.row.icon }}
+                    </template>
+                </el-table-column>
+                <el-table-column prop="parentId" label="上级菜单" width="100">
+                    <template slot-scope="scope">
+                        {{ scope.row.parentId ? getParentName(scope.row.parentId) : '顶级' }}
+                    </template>
+                </el-table-column>
+                <el-table-column prop="sort" label="排序" width="70"></el-table-column>
+                <el-table-column prop="status" label="状态" width="80">
+                    <template slot-scope="scope">
+                        <el-tag :type="scope.row.status === 1 ? 'success' : 'danger'" size="mini">
+                            {{ scope.row.status === 1 ? '启用' : '禁用' }}
+                        </el-tag>
+                    </template>
+                </el-table-column>
+                <el-table-column prop="description" label="描述" show-overflow-tooltip></el-table-column>
+                <el-table-column label="操作" width="150">
+                    <template slot-scope="scope">
+                        <el-button size="mini" @click="handleEdit(scope.row)">编辑</el-button>
+                        <el-button size="mini" type="danger" @click="handleDelete(scope.row)">删除</el-button>
+                    </template>
+                </el-table-column>
+            </el-table>
+        </el-card>
+
+        <!-- 新增/编辑弹窗 -->
+        <el-dialog :title="dialogTitle" :visible.sync="dialogVisible" width="500px">
+            <el-form :model="form" label-width="80px">
+                <el-form-item label="菜单名称">
+                    <el-input v-model="form.name" placeholder="如：房间管理"></el-input>
+                </el-form-item>
+                <el-form-item label="路由路径">
+                    <el-input v-model="form.path" placeholder="如：/admin/rooms"></el-input>
+                </el-form-item>
+                <el-form-item label="图标">
+                    <el-input v-model="form.icon" placeholder="如：el-icon-house"></el-input>
+                </el-form-item>
+                <el-form-item label="上级菜单">
+                    <el-select v-model="form.parentId" placeholder="无（顶级菜单）" clearable style="width: 100%">
+                        <el-option label="顶级菜单" :value="0"></el-option>
+                        <el-option v-for="m in topMenus" :key="m.id" :label="m.name" :value="m.id"></el-option>
+                    </el-select>
+                </el-form-item>
+                <el-form-item label="排序">
+                    <el-input-number v-model="form.sort" :min="0" :max="999"></el-input-number>
+                </el-form-item>
+                <el-form-item label="状态">
+                    <el-switch v-model="form.status" :active-value="1" :inactive-value="0" active-text="启用" inactive-text="禁用"></el-switch>
+                </el-form-item>
+                <el-form-item label="描述">
+                    <el-input v-model="form.description" type="textarea" :rows="2"></el-input>
+                </el-form-item>
+            </el-form>
+            <span slot="footer">
+                <el-button @click="dialogVisible = false">取消</el-button>
+                <el-button type="primary" @click="saveMenu">保存</el-button>
+            </span>
+        </el-dialog>
+    </div>
+</div>
+<script src="https://unpkg.com/vue@2/dist/vue.js"></script>
+<script src="https://unpkg.com/element-ui/lib/index.js"></script>
+<script src="https://unpkg.com/jquery@3/dist/jquery.min.js"></script>
+<script>
+new Vue({
+    el: '#app',
+    data() {
+        return {
+            adminName: localStorage.getItem('adminName') || '管理员',
+            menus: [],
+            dialogVisible: false,
+            dialogTitle: '新增菜单',
+            form: { name: '', path: '', icon: '', parentId: 0, sort: 0, status: 1, description: '' }
+        };
+    },
+    computed: {
+        topMenus() {
+            return this.menus.filter(m => !m.parentId || m.parentId === 0);
+        }
+    },
+    created() {
+        this.loadMenus();
+    },
+    methods: {
+        loadMenus() {
+            $.get('/api/menu/list', (res) => {
+                this.menus = res.data || [];
+            });
+        },
+        getParentName(parentId) {
+            const p = this.menus.find(m => m.id === parentId);
+            return p ? p.name : parentId;
+        },
+        handleAdd() {
+            this.dialogTitle = '新增菜单';
+            this.form = { name: '', path: '', icon: '', parentId: 0, sort: 0, status: 1, description: '' };
+            this.dialogVisible = true;
+        },
+        handleEdit(row) {
+            this.dialogTitle = '编辑菜单';
+            this.form = { ...row };
+            this.dialogVisible = true;
+        },
+        saveMenu() {
+            if (!this.form.name) { this.$message.warning('请输入菜单名称'); return; }
+            if (!this.form.path) { this.$message.warning('请输入路由路径'); return; }
+            $.ajax({
+                url: '/api/menu/save',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(this.form),
+                success: (res) => {
+                    if (res.error) { this.$message.error(res.error); return; }
+                    this.$message.success(res.message);
+                    this.dialogVisible = false;
+                    this.loadMenus();
+                },
+                error: () => { this.$message.error('保存失败'); }
+            });
+        },
+        handleDelete(row) {
+            this.$confirm('确定删除菜单「' + row.name + '」？删除后相关权限配置也会清除。', '提示', {
+                confirmButtonText: '确定', cancelButtonText: '取消', type: 'warning'
+            }).then(() => {
+                $.ajax({
+                    url: '/api/menu/' + row.id,
+                    method: 'DELETE',
+                    success: (res) => {
+                        if (res.error) { this.$message.error(res.error); return; }
+                        this.$message.success(res.message);
+                        this.loadMenus();
+                    }
+                });
+            }).catch(() => {});
+        },
+        logout() {
+            $.post('/api/auth/logout', () => {
+                localStorage.removeItem('adminName');
+                window.location.href = '/admin/login';
+            });
+        }
+    }
+});
+</script>
+</body>
+</html>

@@ -37,15 +37,9 @@
     <div class="app-container">
         <div class="sidebar">
             <div class="logo"><span>星语</span>农庄</div>
-            <a href="/admin/dashboard" class="menu-item active">📊 仪表盘</a>
-            <a href="/admin/rooms" class="menu-item">🏠 房间管理</a>
-            <a href="/admin/food" class="menu-item">🍽 菜品管理</a>
-            <a href="/admin/products" class="menu-item">🛍 农产品管理</a>
-            <a href="/admin/fruit-trees" class="menu-item">🌳 果木管理</a>
-            <a href="/admin/plots" class="menu-item">🗺 地块管理</a>
-            <a href="/admin/orders" class="menu-item">📋 订单管理</a>
-            <a href="/admin/users" class="menu-item">👥 用户管理</a>
-            <a href="/admin/config" class="menu-item">⚙ 模块配置</a>
+            <a v-for="m in sidebarMenus" :key="m.id" :href="m.path" class="menu-item" :class="{ active: m.path === '/admin/dashboard' }">
+                <i :class="m.icon" style="margin-right:6px"></i>{{ m.name }}
+            </a>
         </div>
         <div class="main-content">
             <div class="header">
@@ -102,11 +96,11 @@
 <script>
 new Vue({
     el: '#app',
-    data() { return { stats: { counts: {} }, modules: [], adminName: '管理员' }; },
+    data() { return { stats: { counts: {} }, modules: [], adminName: '管理员', sidebarMenus: [] }; },
     created() {
         $.getJSON('/api/stats', d => { this.stats = d; });
         $.getJSON('/api/config', d => { this.modules = d.data || []; });
-        $.getJSON('/api/auth/current', d => { if (d.data) this.adminName = d.data.nickname || d.data.username || '管理员'; });
+        $.getJSON('/api/auth/current', d => { if (d.data) { this.adminName = d.data.nickname || d.data.username || '管理员'; this.sidebarMenus = d.data.menus || []; } });
     },
     methods: {
         toggleModule(m) {

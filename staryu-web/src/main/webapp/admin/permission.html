@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>权限配置 - 星语农庄</title>
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <style>
+        body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: #f5f7fa; }
+        .app-header { background: #16a34a; color: #fff; padding: 0 20px; height: 50px; display: flex; align-items: center; justify-content: space-between; }
+        .app-header h2 { margin: 0; font-size: 16px; }
+        .app-header .user-info { font-size: 14px; }
+        .app-header .user-info a { color: #fff; cursor: pointer; text-decoration: underline; }
+        .main-content { padding: 20px; }
+        .role-card { margin-bottom: 20px; }
+        .role-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; }
+        .role-header h3 { margin: 0; }
+        .menu-tree { border: 1px solid #ebeef5; border-radius: 4px; padding: 15px; }
+    </style>
+</head>
+<body>
+<div id="app">
+    <div class="app-header">
+        <h2>星语农庄管理后台</h2>
+        <div class="user-info">
+            {{ adminName }} |
+            <a @click="logout">退出登录</a>
+        </div>
+    </div>
+    <div class="main-content">
+        <el-card>
+            <div slot="header"><span>角色权限配置</span></div>
+            <el-tabs v-model="activeRole" @tab-click="onRoleChange">
+                <el-tab-pane v-for="role in roles" :key="role.key" :label="role.name" :name="role.key"></el-tab-pane>
+            </el-tabs>
+            <div v-if="activeRole" class="menu-tree">
+                <p style="margin-top:0;color:#909399;">勾选当前角色可访问的菜单：</p>
+                <el-tree
+                    ref="menuTree"
+                    :data="menuTree"
+                    show-checkbox
+                    node-key="id"
+                    :default-checked-keys="checkedKeys"
+                    :props="{ label: 'name', children: 'children' }"
+                    :check-strictly="false">
+                </el-tree>
+                <div style="margin-top: 15px; text-align: right;">
+                    <el-button type="primary" @click="savePermission">保存权限</el-button>
+                </div>
+            </div>
+        </el-card>
+    </div>
+</div>
+<script src="https://unpkg.com/vue@2/dist/vue.js"></script>
+<script src="https://unpkg.com/element-ui/lib/index.js"></script>
+<script src="https://unpkg.com/jquery@3/dist/jquery.min.js"></script>
+<script>
+new Vue({
+    el: '#app',
+    data() {
+        return {
+            adminName: localStorage.getItem('adminName') || '管理员',
+            roles: [
+                { key: 'admin', name: '管理员' },
+                { key: 'operator', name: '运营人员' },
+                { key: 'viewer', name: '只读用户' }
+            ],
+            activeRole: 'admin',
+            allMenus: [],
+            checkedKeys: []
+        };
+    },
+    computed: {
+        menuTree() {
+            const topMenus = this.allMenus.filter(m => !m.parentId || m.parentId === 0);
+            return topMenus.map(m => ({
+                id: m.id,
+                name: m.name,
+                children: this.allMenus.filter(c => c.parentId === m.id).map(c => ({
+                    id: c.id, name: c.name, children: []
+                }))
+            }));
+        }
+    },
+    created() {
+        this.loadMenus();
+    },
+    methods: {
+        loadMenus() {
+            $.get('/api/menu/list', (res) => {
+                this.allMenus = res.data || [];
+                this.loadPermission();
+            });
+        },
+        loadPermission() {
+            if (!this.activeRole) return;
+            $.get('/api/menu/role/' + this.activeRole, (res) => {
+                this.checkedKeys = (res.data || []).map(m => m.id);
+            });
+        },
+        onRoleChange() {
+            this.loadPermission();
+        },
+        savePermission() {
+            const tree = this.$refs.menuTree;
+            // 获取所有选中和半选的节点（半选表示父节点部分选中，也需要保存）
+            const checkedKeys = tree.getCheckedKeys();
+            const halfCheckedKeys = tree.getHalfCheckedKeys();
+            const allKeys = [...checkedKeys, ...halfCheckedKeys];
+
+            $.ajax({
+                url: '/api/menu/role/' + this.activeRole,
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ menuIds: allKeys }),
+                success: (res) => {
+                    if (res.error) { this.$message.error(res.error); return; }
+                    this.$message.success(res.message);
+                },
+                error: () => { this.$message.error('保存失败'); }
+            });
+        },
+        logout() {
+            $.post('/api/auth/logout', () => {
+                localStorage.removeItem('adminName');
+                window.location.href = '/admin/login';
+            });
+        }
+    }
+});
+</script>
+</body>
+</html>

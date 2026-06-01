@@ -66,4 +66,14 @@ public class AdminController {
     public String config() {
         return "redirect:/admin/config.html";
     }
+
+    @GetMapping("/menu")
+    public String menu() {
+        return "redirect:/admin/menu.html";
+    }
+
+    @GetMapping("/permission")
+    public String permission() {
+        return "redirect:/admin/permission.html";
+    }
 }

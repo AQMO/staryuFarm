@@ -28,6 +28,8 @@ public class BusinessService {
     @Autowired private OrderDao orderDao;
     @Autowired private CartDao cartDao;
     @Autowired private AddressDao addressDao;
+    @Autowired private MenuDao menuDao;
+    @Autowired private RoleMenuDao roleMenuDao;
 
     // ===== Module Config =====
     public List<ModuleConfig> getAllModules() {
@@ -168,5 +170,56 @@ public class BusinessService {
         stats.put("pendingOrders", orderDao.countByField("status", "pending"));
         stats.put("todayRevenue", 0);
         return stats;
+    }
+
+    // ===== Menu =====
+    public List<Menu> getAllMenus() {
+        return menuDao.findAll().stream()
+                .sorted((a, b) -> Integer.compare(a.getSortOrder() != null ? a.getSortOrder() : 0, b.getSortOrder() != null ? b.getSortOrder() : 0))
+                .collect(Collectors.toList());
+    }
+
+    public List<Menu> getEnabledMenus() {
+        return menuDao.findByField("isVisible", 1).stream()
+                .sorted((a, b) -> Integer.compare(a.getSortOrder() != null ? a.getSortOrder() : 0, b.getSortOrder() != null ? b.getSortOrder() : 0))
+                .collect(Collectors.toList());
+    }
+
+    public Menu getMenuById(Integer id) {
+        return menuDao.findById(id).orElse(null);
+    }
+
+    public Menu saveMenu(Menu menu) {
+        return menuDao.save(menu);
+    }
+
+    public void deleteMenu(Integer id) {
+        roleMenuDao.deleteByMenuId(id);
+        menuDao.deleteById(id);
+    }
+
+    public List<Menu> getMenusByRole(String role) {
+        List<RoleMenu> roleMenus = roleMenuDao.findByRole(role);
+        List<Integer> menuIds = roleMenus.stream().map(RoleMenu::getMenuId).collect(Collectors.toList());
+        if (menuIds.isEmpty()) return new ArrayList<>();
+        return menuDao.findAll().stream()
+                .filter(m -> menuIds.contains(m.getId()) && (m.getIsVisible() == null || m.getIsVisible() == 1))
+                .sorted((a, b) -> Integer.compare(a.getSortOrder() != null ? a.getSortOrder() : 0, b.getSortOrder() != null ? b.getSortOrder() : 0))
+                .collect(Collectors.toList());
+    }
+
+    // ===== RoleMenu =====
+    public List<RoleMenu> getRoleMenus(String role) {
+        return roleMenuDao.findByRole(role);
+    }
+
+    public void saveRoleMenus(String role, List<Integer> menuIds) {
+        roleMenuDao.deleteByRole(role);
+        for (Integer menuId : menuIds) {
+            RoleMenu rm = new RoleMenu();
+            rm.setRole(role);
+            rm.setMenuId(menuId);
+            roleMenuDao.save(rm);
+        }
     }
 }

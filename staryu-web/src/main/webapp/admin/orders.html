@@ -24,15 +24,10 @@
     <div class="app-container">
         <div class="sidebar">
             <div class="logo"><span>星语</span>农庄</div>
-            <a href="/admin/dashboard" class="menu-item">📊 仪表盘</a>
-            <a href="/admin/rooms" class="menu-item">🏠 房间管理</a>
-            <a href="/admin/food" class="menu-item">🍽 菜品管理</a>
-            <a href="/admin/products" class="menu-item">🛍 农产品管理</a>
-            <a href="/admin/fruit-trees" class="menu-item">🌳 果木管理</a>
-            <a href="/admin/plots" class="menu-item">🗺 地块管理</a>
-            <a href="/admin/orders" class="menu-item active">📋 订单管理</a>
-            <a href="/admin/users" class="menu-item">👥 用户管理</a>
-            <a href="/admin/config" class="menu-item">⚙ 模块配置</a>
+            <a v-for="menu in sidebarMenus" :key="menu.id"
+               :href="menu.url" :class="['menu-item', currentMenu === menu.menuKey ? 'active' : '']">
+               {{ menu.icon }} {{ menu.name }}
+            </a>
         </div>
         <div class="main-content">
             <div class="header"><h2>订单管理</h2></div>
@@ -72,19 +67,27 @@
 <script src="https://unpkg.com/vue@2/dist/vue.js"></script>
 <script src="https://unpkg.com/element-ui/lib/index.js"></script>
 <script src="https://unpkg.com/jquery@3/dist/jquery.min.js"></script>
+<script src="/static/js/admin-common.js"></script>
 <script>
 new Vue({
     el: '#app',
     data() {
         return {
+            currentMenu: \'orders',
+            sidebarMenus: [],
             list: [], filterStatus: '',
             statusMap: { pending:'待支付', paid:'已支付', completed:'已完成', cancelled:'已取消' },
             typeMap: { room:'房间', food:'餐饮', product:'农产品', fruit_tree:'果木', plot:'地块' }
         };
     },
-    created() { this.loadList(); },
+    created() { this.loadSidebar(); this.loadList(); },
     methods: {
-        loadList() {
+        
+        loadSidebar() {
+            $.getJSON('/api/menus/tree', (d) => {
+                this.sidebarMenus = d.data || [];
+            });
+        },loadList() {
             let url = '/api/orders';
             if (this.filterStatus) url += '?status=' + this.filterStatus;
             $.getJSON(url, d => { this.list = d.data || []; });
