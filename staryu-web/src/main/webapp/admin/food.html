@@ -25,8 +25,10 @@
         <div class="sidebar">
             <div class="logo"><span>星语</span>农庄</div>
             <a v-for="menu in sidebarMenus" :key="menu.id"
-               :href="menu.url" :class="['menu-item', currentMenu === menu.menuKey ? 'active' : '']">
-               {{ menu.icon }} {{ menu.name }}
+               :href="menu.url + '.html'"
+               :class="{ active: location.pathname === menu.url + '.html' }"
+               class="menu-item">
+                <i :class="menu.icon" style="margin-right:6px"></i>{{ menu.name }}
             </a>
         </div>
         <div class="main-content">
@@ -116,7 +118,7 @@ new Vue({
     methods: {
         
         loadSidebar() {
-            $.getJSON('/api/menus/tree', (d) => {
+            $.getJSON('/api/menus/current', (d) => {
                 this.sidebarMenus = d.data || [];
             });
         },loadList() { $.getJSON('/api/food', d => { this.list = (d.data||[]).map(f => { f.categoryName = (this.categories.find(c=>c.id===f.categoryId)||{}).name||'-'; return f; }); }); },

@@ -37,7 +37,7 @@
     <div class="app-container">
         <div class="sidebar">
             <div class="logo"><span>星语</span>农庄</div>
-            <a v-for="m in sidebarMenus" :key="m.id" :href="m.path" class="menu-item" :class="{ active: m.path === '/admin/dashboard' }">
+            <a v-for="m in sidebarMenus" :key="m.id" :href="m.url" class="menu-item" :class="{ active: m.path === '/admin/dashboard' }">
                 <i :class="m.icon" style="margin-right:6px"></i>{{ m.name }}
             </a>
         </div>
@@ -100,7 +100,7 @@ new Vue({
     created() {
         $.getJSON('/api/stats', d => { this.stats = d; });
         $.getJSON('/api/config', d => { this.modules = d.data || []; });
-        $.getJSON('/api/auth/current', d => { if (d.data) { this.adminName = d.data.nickname || d.data.username || '管理员'; this.sidebarMenus = d.data.menus || []; } });
+        $.getJSON('/api/auth/current', d => { if (d.data) { this.adminName = d.data.nickname || d.data.username || '管理员'; this.sidebarMenus = d.menus || []; } });
     },
     methods: {
         toggleModule(m) {
