@@ -4,8 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>星语农庄 - 登录</title>
-    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/element-ui@2.15.14/lib/theme-chalk/index.css">
     <style>
+        [v-cloak] { display: none; }
         body { margin: 0; font-family: "Microsoft YaHei", sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; }
         .login-container { width: 400px; background: #fff; border-radius: 12px; padding: 40px; box-shadow: 0 20px 60px rgba(0,0,0,.15); }
         .login-header { text-align: center; margin-bottom: 30px; }
@@ -18,7 +19,7 @@
     </style>
 </head>
 <body>
-<div id="app">
+<div id="app" v-cloak>
     <div class="login-container">
         <div class="login-header">
             <h1><span>星语</span>农庄</h1>
@@ -38,9 +39,9 @@
         <div class="footer">星语农庄管理系统 v1.0</div>
     </div>
 </div>
-<script src="https://unpkg.com/vue@2/dist/vue.js"></script>
-<script src="https://unpkg.com/element-ui/lib/index.js"></script>
-<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/vue@2.7.16/dist/vue.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/element-ui@2.15.14/lib/index.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios@1.7.2/dist/axios.min.js"></script>
 <script>
 new Vue({
     el: '#app',

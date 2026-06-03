@@ -4,8 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>星语农庄 - 用户管理</title>
-    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/element-ui@2.15.14/lib/theme-chalk/index.css">
     <style>
+        [v-cloak] { display: none; }
         body { margin: 0; font-family: "Microsoft YaHei", sans-serif; background: #f0f2f5; }
         .app-container { display: flex; min-height: 100vh; }
         .sidebar { width: 220px; background: #304156; color: #fff; position: fixed; top: 0; bottom: 0; overflow-y: auto; }
@@ -21,7 +22,7 @@
     </style>
 </head>
 <body>
-<div id="app">
+<div id="app" v-cloak>
     <div class="app-container">
         <div class="sidebar">
             <div class="logo"><span>星语</span>农庄</div>
@@ -55,9 +56,9 @@
         </div>
     </div>
 </div>
-<script src="https://unpkg.com/vue@2/dist/vue.js"></script>
-<script src="https://unpkg.com/element-ui/lib/index.js"></script>
-<script src="https://unpkg.com/jquery@3/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/vue@2.7.16/dist/vue.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/element-ui@2.15.14/lib/index.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
 <script src="/static/js/admin-common.js"></script>
 <script>
 new Vue({
