@@ -14,8 +14,9 @@
         .sidebar .menu-item { display: block; padding: 14px 20px; color: #bfcbd9; text-decoration: none; font-size: 14px; transition: all .3s; }
         .sidebar .menu-item:hover, .sidebar .menu-item.active { background: #263445; color: #409eff; }
         .main-content { margin-left: 220px; flex: 1; }
-        .header { background: #fff; padding: 16px 24px; box-shadow: 0 1px 4px rgba(0,21,41,.08); }
+        .header { background: #fff; padding: 16px 24px; box-shadow: 0 1px 4px rgba(0,21,41,.08); display: flex; justify-content: space-between; align-items: center; }
         .header h2 { margin: 0; font-size: 18px; color: #303133; }
+        .header .user-info { display: flex; align-items: center; gap: 16px; color: #909399; font-size: 14px; }
         .content { padding: 24px; }
     </style>
 </head>
@@ -30,7 +31,13 @@
             </a>
         </div>
         <div class="main-content">
-            <div class="header"><h2>订单管理</h2></div>
+            <div class="header">
+                <h2>订单管理</h2>
+                <div class="user-info">
+                    <span>{{ adminName }}</span>
+                    <el-button size="mini" type="text" @click="logout">退出登录</el-button>
+                </div>
+            </div>
             <div class="content">
                 <div style="margin-bottom:16px">
                     <el-select v-model="filterStatus" placeholder="订单状态" clearable @change="loadList">
@@ -73,21 +80,17 @@ new Vue({
     el: '#app',
     data() {
         return {
-            currentMenu: \'orders',
+            currentMenu: 'orders',
             sidebarMenus: [],
+            adminName: '管理员',
             list: [], filterStatus: '',
             statusMap: { pending:'待支付', paid:'已支付', completed:'已完成', cancelled:'已取消' },
             typeMap: { room:'房间', food:'餐饮', product:'农产品', fruit_tree:'果木', plot:'地块' }
         };
     },
-    created() { this.loadSidebar(); this.loadList(); },
+    created() { initAdminPage(this, 'orders'); this.loadList(); },
     methods: {
-        
-        loadSidebar() {
-            $.getJSON('/api/menus/tree', (d) => {
-                this.sidebarMenus = d.data || [];
-            });
-        },loadList() {
+        logout: adminLogout,loadList() {
             let url = '/api/orders';
             if (this.filterStatus) url += '?status=' + this.filterStatus;
             $.getJSON(url, d => { this.list = d.data || []; });

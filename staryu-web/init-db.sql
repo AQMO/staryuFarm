@@ -177,17 +177,15 @@ CREATE TABLE IF NOT EXISTS address (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- 菜单表
-CREATE TABLE IF NOT EXISTS menu (
+CREATE TABLE IF NOT EXISTS menus (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    parent_id BIGINT DEFAULT 0,
     name VARCHAR(50) NOT NULL,
     menu_key VARCHAR(50) NOT NULL UNIQUE,
     url VARCHAR(200),
     icon VARCHAR(50),
-    sort INT DEFAULT 0,
+    sort_order INT DEFAULT 0,
     is_visible TINYINT(1) DEFAULT 1,
-    created_at DATETIME,
-    updated_at DATETIME
+    created_at DATETIME
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- 角色菜单权限表
@@ -195,7 +193,8 @@ CREATE TABLE IF NOT EXISTS role_menu (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     role VARCHAR(20) NOT NULL,
     menu_id BIGINT NOT NULL,
-    created_at DATETIME
+    created_at DATETIME,
+    UNIQUE KEY uk_role_menu (role, menu_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ===== 初始数据 =====
@@ -215,26 +214,26 @@ INSERT INTO module_config (module_key, module_name, is_enabled, sort, icon, desc
 ON DUPLICATE KEY UPDATE module_name=VALUES(module_name);
 
 -- 管理后台菜单
-INSERT INTO menu (parent_id, name, menu_key, url, icon, sort, is_visible) VALUES
-  (0, '仪表盘', 'dashboard', '/admin/dashboard', '📊', 1, 1),
-  (0, '房间管理', 'rooms', '/admin/rooms', '🏠', 2, 1),
-  (0, '菜品管理', 'food', '/admin/food', '🍽️', 3, 1),
-  (0, '农产品管理', 'products', '/admin/products', '🛍️', 4, 1),
-  (0, '果木管理', 'fruit-trees', '/admin/fruit-trees', '🌳', 5, 1),
-  (0, '地块管理', 'plots', '/admin/plots', '🗺️', 6, 1),
-  (0, '订单管理', 'orders', '/admin/orders', '📋', 7, 1),
-  (0, '用户管理', 'users', '/admin/users', '👥', 8, 1),
-  (0, '模块配置', 'config', '/admin/config', '⚙️', 9, 1),
-  (0, '菜单管理', 'menu', '/admin/menu', '📑', 10, 1),
-  (0, '权限配置', 'permission', '/admin/permission', '🔐', 11, 1)
-ON DUPLICATE KEY UPDATE name=VALUES(name), url=VALUES(url), icon=VALUES(icon), sort=VALUES(sort);
+INSERT INTO menus (name, menu_key, url, icon, sort_order, is_visible) VALUES
+  ('仪表盘', 'dashboard', '/admin/dashboard', '📊', 1, 1),
+  ('房间管理', 'rooms', '/admin/rooms', '🏠', 2, 1),
+  ('菜品管理', 'food', '/admin/food', '🍽️', 3, 1),
+  ('农产品管理', 'products', '/admin/products', '🛍️', 4, 1),
+  ('果木管理', 'fruit-trees', '/admin/fruit-trees', '🌳', 5, 1),
+  ('地块管理', 'plots', '/admin/plots', '🗺️', 6, 1),
+  ('订单管理', 'orders', '/admin/orders', '📋', 7, 1),
+  ('用户管理', 'users', '/admin/users', '👥', 8, 1),
+  ('模块配置', 'config', '/admin/config', '⚙️', 9, 1),
+  ('菜单管理', 'menu', '/admin/menu', '📑', 10, 1),
+  ('权限配置', 'permission', '/admin/permission', '🔐', 11, 1)
+ON DUPLICATE KEY UPDATE name=VALUES(name), url=VALUES(url), icon=VALUES(icon), sort_order=VALUES(sort_order);
 
 -- admin 角色拥有所有菜单权限
 INSERT INTO role_menu (role, menu_id, created_at)
-SELECT 'admin', id, NOW() FROM menu
+SELECT 'admin', id, NOW() FROM menus
 ON DUPLICATE KEY UPDATE role=VALUES(role);
 
 -- operator 角色拥有基础业务菜单权限
 INSERT INTO role_menu (role, menu_id, created_at)
-SELECT 'operator', id, NOW() FROM menu WHERE menu_key IN ('dashboard', 'rooms', 'food', 'products', 'fruit-trees', 'plots', 'orders')
+SELECT 'operator', id, NOW() FROM menus WHERE menu_key IN ('dashboard', 'rooms', 'food', 'products', 'fruit-trees', 'plots', 'orders')
 ON DUPLICATE KEY UPDATE role=VALUES(role);

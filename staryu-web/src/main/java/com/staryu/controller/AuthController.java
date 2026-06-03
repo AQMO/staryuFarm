@@ -57,7 +57,7 @@ public class AuthController {
         userInfo.put("role", user.getRole());
         userInfo.put("avatar", user.getAvatar());
         result.put("data", userInfo);
-        result.put("menus", service.getMenusByRole(user.getRole()));
+        result.put("menus", "admin".equals(user.getRole()) ? service.getEnabledMenus() : service.getMenusByRole(user.getRole()));
         result.put("message", "登录成功");
         return result;
     }
@@ -80,7 +80,7 @@ public class AuthController {
         userInfo.put("role", user.getRole());
         userInfo.put("avatar", user.getAvatar());
         result.put("data", userInfo);
-        result.put("menus", service.getMenusByRole(user.getRole()));
+        result.put("menus", "admin".equals(user.getRole()) ? service.getEnabledMenus() : service.getMenusByRole(user.getRole()));
         return result;
     }
 

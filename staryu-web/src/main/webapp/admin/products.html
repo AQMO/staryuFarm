@@ -14,8 +14,9 @@
         .sidebar .menu-item { display: block; padding: 14px 20px; color: #bfcbd9; text-decoration: none; font-size: 14px; transition: all .3s; }
         .sidebar .menu-item:hover, .sidebar .menu-item.active { background: #263445; color: #409eff; }
         .main-content { margin-left: 220px; flex: 1; }
-        .header { background: #fff; padding: 16px 24px; box-shadow: 0 1px 4px rgba(0,21,41,.08); }
+        .header { background: #fff; padding: 16px 24px; box-shadow: 0 1px 4px rgba(0,21,41,.08); display: flex; justify-content: space-between; align-items: center; }
         .header h2 { margin: 0; font-size: 18px; color: #303133; }
+        .header .user-info { display: flex; align-items: center; gap: 16px; color: #909399; font-size: 14px; }
         .content { padding: 24px; }
     </style>
 </head>
@@ -30,7 +31,13 @@
             </a>
         </div>
         <div class="main-content">
-            <div class="header"><h2>农产品管理</h2></div>
+            <div class="header">
+                <h2>农产品管理</h2>
+                <div class="user-info">
+                    <span>{{ adminName }}</span>
+                    <el-button size="mini" type="text" @click="logout">退出登录</el-button>
+                </div>
+            </div>
             <div class="content">
                 <div style="margin-bottom:16px">
                     <el-button type="primary" @click="handleAdd">新增产品</el-button>
@@ -93,16 +100,11 @@
 new Vue({
     el: '#app',
     data() { return {
-            currentMenu: \'products',
-            sidebarMenus: [], list:[], cats:[], dialogVisible:false, catDialogVisible:false, dialogTitle:'新增产品', form:{name:'',categoryId:null,price:0,unit:'斤',stock:0,pic:'',description:'',status:1} }; },
-    created() { this.loadSidebar(); this.loadCats(); },
+            currentMenu: 'products',
+            sidebarMenus: [], adminName: '管理员', list:[], cats:[], dialogVisible:false, catDialogVisible:false, dialogTitle:'新增产品', form:{name:'',categoryId:null,price:0,unit:'斤',stock:0,pic:'',description:'',status:1} }; },
+    created() { initAdminPage(this, 'products'); this.loadCats(); },
     methods: {
-        
-        loadSidebar() {
-            $.getJSON('/api/menus/tree', (d) => {
-                this.sidebarMenus = d.data || [];
-            });
-        },loadCats() { $.getJSON('/api/product-category', d => { this.cats = d.data||[]; this.loadList(); }); },
+        logout: adminLogout,loadCats() { $.getJSON('/api/product-category', d => { this.cats = d.data||[]; this.loadList(); }); },
         loadList() { $.getJSON('/api/products', d => { this.list = (d.data||[]).map(p => { p.categoryName=(this.cats.find(c=>c.id===p.categoryId)||{}).name||'-'; return p; }); }); },
         resetForm() { this.form = {name:'',categoryId:null,price:0,unit:'斤',stock:0,pic:'',description:'',status:1}; },
         handleAdd() { this.resetForm(); this.dialogTitle='新增产品'; this.dialogVisible=true; },

@@ -16,6 +16,7 @@
         .main-content { margin-left: 220px; flex: 1; }
         .header { background: #fff; padding: 16px 24px; box-shadow: 0 1px 4px rgba(0,21,41,.08); display: flex; justify-content: space-between; align-items: center; }
         .header h2 { margin: 0; font-size: 18px; color: #303133; }
+        .header .user-info { display: flex; align-items: center; gap: 16px; color: #909399; font-size: 14px; }
         .content { padding: 24px; }
         .stat-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
         .stat-card { background: #fff; border-radius: 8px; padding: 20px; box-shadow: 0 2px 12px rgba(0,0,0,.06); }
@@ -37,15 +38,16 @@
     <div class="app-container">
         <div class="sidebar">
             <div class="logo"><span>星语</span>农庄</div>
-            <a v-for="m in sidebarMenus" :key="m.id" :href="m.url" class="menu-item" :class="{ active: m.path === '/admin/dashboard' }">
-                <i :class="m.icon" style="margin-right:6px"></i>{{ m.name }}
+            <a v-for="menu in sidebarMenus" :key="menu.id"
+               :href="menu.url" :class="['menu-item', currentMenu === menu.menuKey ? 'active' : '']">
+               {{ menu.icon }} {{ menu.name }}
             </a>
         </div>
         <div class="main-content">
             <div class="header">
                 <h2>仪表盘</h2>
-                <div style="display:flex;align-items:center;gap:16px">
-                    <span style="color:#909399">欢迎回来，{{ adminName }}</span>
+                <div class="user-info">
+                    <span>{{ adminName }}</span>
                     <el-button size="mini" type="text" @click="logout">退出登录</el-button>
                 </div>
             </div>
@@ -93,21 +95,21 @@
 <script src="https://unpkg.com/vue@2/dist/vue.js"></script>
 <script src="https://unpkg.com/element-ui/lib/index.js"></script>
 <script src="https://unpkg.com/jquery@3/dist/jquery.min.js"></script>
+<script src="/static/js/admin-common.js"></script>
 <script>
 new Vue({
     el: '#app',
-    data() { return { stats: { counts: {} }, modules: [], adminName: '管理员', sidebarMenus: [] }; },
+    data() { return { currentMenu: 'dashboard', sidebarMenus: [], adminName: '管理员', stats: { counts: {} }, modules: [] }; },
     created() {
+        initAdminPage(this, 'dashboard');
         $.getJSON('/api/stats', d => { this.stats = d; });
         $.getJSON('/api/config', d => { this.modules = d.data || []; });
-        $.getJSON('/api/auth/current', d => { if (d.data) { this.adminName = d.data.nickname || d.data.username || '管理员'; this.sidebarMenus = d.menus || []; } });
+
     },
     methods: {
+        logout: adminLogout,
         toggleModule(m) {
             $.ajax({ url: '/api/config/' + m.id, method: 'PUT', contentType: 'application/json', data: JSON.stringify(m), success: () => { this.$message.success('更新成功'); }, error: () => { this.$message.error('更新失败'); } });
-        },
-        logout() {
-            $.ajax({ url: '/api/auth/logout', method: 'POST', success: () => { window.location.href = '/admin/login'; } });
         }
     }
 });

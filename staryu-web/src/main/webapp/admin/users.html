@@ -14,8 +14,9 @@
         .sidebar .menu-item { display: block; padding: 14px 20px; color: #bfcbd9; text-decoration: none; font-size: 14px; transition: all .3s; }
         .sidebar .menu-item:hover, .sidebar .menu-item.active { background: #263445; color: #409eff; }
         .main-content { margin-left: 220px; flex: 1; }
-        .header { background: #fff; padding: 16px 24px; box-shadow: 0 1px 4px rgba(0,21,41,.08); }
+        .header { background: #fff; padding: 16px 24px; box-shadow: 0 1px 4px rgba(0,21,41,.08); display: flex; justify-content: space-between; align-items: center; }
         .header h2 { margin: 0; font-size: 18px; color: #303133; }
+        .header .user-info { display: flex; align-items: center; gap: 16px; color: #909399; font-size: 14px; }
         .content { padding: 24px; }
     </style>
 </head>
@@ -30,7 +31,13 @@
             </a>
         </div>
         <div class="main-content">
-            <div class="header"><h2>用户管理</h2></div>
+            <div class="header">
+                <h2>用户管理</h2>
+                <div class="user-info">
+                    <span>{{ adminName }}</span>
+                    <el-button size="mini" type="text" @click="logout">退出登录</el-button>
+                </div>
+            </div>
             <div class="content">
                 <el-table :data="list" border stripe>
                     <el-table-column prop="id" label="ID" width="60"></el-table-column>
@@ -56,16 +63,11 @@
 new Vue({
     el: '#app',
     data() { return {
-            currentMenu: \'users',
-            sidebarMenus: [], list: [] }; },
-    created() { this.loadSidebar(); this.loadList(); },
+            currentMenu: 'users',
+            sidebarMenus: [], adminName: '管理员', list: [] }; },
+    created() { initAdminPage(this, 'users'); this.loadList(); },
     methods: {
-        
-        loadSidebar() {
-            $.getJSON('/api/menus/tree', (d) => {
-                this.sidebarMenus = d.data || [];
-            });
-        },loadList() { $.getJSON('/api/users', d => { this.list = d.data || []; }); },
+        logout: adminLogout,loadList() { $.getJSON('/api/users', d => { this.list = d.data || []; }); },
         handleDelete(r) {
             this.$confirm('确认删除用户?','提示',{type:'warning'}).then(()=>{
                 $.ajax({url:'/api/users/'+r.id,method:'DELETE',success:()=>{this.$message.success('删除成功');this.loadList();}});

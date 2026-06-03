@@ -14,8 +14,9 @@
         .sidebar .menu-item { display: block; padding: 14px 20px; color: #bfcbd9; text-decoration: none; font-size: 14px; transition: all .3s; }
         .sidebar .menu-item:hover, .sidebar .menu-item.active { background: #263445; color: #409eff; }
         .main-content { margin-left: 220px; flex: 1; }
-        .header { background: #fff; padding: 16px 24px; box-shadow: 0 1px 4px rgba(0,21,41,.08); }
+        .header { background: #fff; padding: 16px 24px; box-shadow: 0 1px 4px rgba(0,21,41,.08); display: flex; justify-content: space-between; align-items: center; }
         .header h2 { margin: 0; font-size: 18px; color: #303133; }
+        .header .user-info { display: flex; align-items: center; gap: 16px; color: #909399; font-size: 14px; }
         .content { padding: 24px; }
     </style>
 </head>
@@ -30,7 +31,13 @@
             </a>
         </div>
         <div class="main-content">
-            <div class="header"><h2>模块配置</h2></div>
+            <div class="header">
+                <h2>模块配置</h2>
+                <div class="user-info">
+                    <span>{{ adminName }}</span>
+                    <el-button size="mini" type="text" @click="logout">退出登录</el-button>
+                </div>
+            </div>
             <div class="content">
                 <p style="color:#909399;margin-bottom:16px">控制小程序首页各模块的显示与排序</p>
                 <el-table :data="modules" border stripe>
@@ -58,16 +65,11 @@
 new Vue({
     el: '#app',
     data() { return {
-            currentMenu: \'config',
-            sidebarMenus: [], modules: [] }; },
-    created() { this.loadSidebar(); this.loadList(); },
+            currentMenu: 'config',
+            sidebarMenus: [], adminName: '管理员', modules: [] }; },
+    created() { initAdminPage(this, 'config'); this.loadList(); },
     methods: {
-        
-        loadSidebar() {
-            $.getJSON('/api/menus/tree', (d) => {
-                this.sidebarMenus = d.data || [];
-            });
-        },loadList() { $.getJSON('/api/config', d => { this.modules = d.data || []; }); },
+        logout: adminLogout,loadList() { $.getJSON('/api/config', d => { this.modules = d.data || []; }); },
         saveRow(m) {
             $.ajax({ url: '/api/config/' + m.id, method: 'PUT', contentType: 'application/json', data: JSON.stringify(m), success: () => { this.$message.success('更新成功'); }, error: () => { this.$message.error('更新失败'); } });
         }
