@@ -30,6 +30,7 @@ public class BusinessService {
     @Autowired private AddressDao addressDao;
     @Autowired private MenuDao menuDao;
     @Autowired private RoleMenuDao roleMenuDao;
+    @Autowired private PaymentRecordDao paymentRecordDao;
 
     // ===== Module Config =====
     public List<ModuleConfig> getAllModules() {
@@ -221,5 +222,34 @@ public class BusinessService {
             rm.setMenuId(menuId);
             roleMenuDao.save(rm);
         }
+    }
+
+    // ===== Payment Records =====
+    public PaymentRecord createPaymentRecord(PaymentRecord record) {
+        return paymentRecordDao.save(record);
+    }
+
+    public PaymentRecord getPaymentRecordById(Integer id) {
+        return paymentRecordDao.findById(id).orElse(null);
+    }
+
+    public PaymentRecord getPaymentByPaymentNo(String paymentNo) {
+        return paymentRecordDao.findByPaymentNo(paymentNo);
+    }
+
+    public PaymentRecord getPaymentByOrderId(Integer orderId) {
+        return paymentRecordDao.findByOrderId(orderId);
+    }
+
+    public List<PaymentRecord> getAllPaymentRecords() {
+        return paymentRecordDao.findAll();
+    }
+
+    public PaymentRecord updatePaymentRecord(PaymentRecord record) {
+        return paymentRecordDao.save(record);
+    }
+
+    public void updateOrder(Order order) {
+        orderDao.save(order);
     }
 }

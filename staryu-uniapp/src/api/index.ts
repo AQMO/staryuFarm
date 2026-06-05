@@ -88,3 +88,13 @@ export const getModuleConfig = () => request({ url: '/api/config' })
 
 // ============ 统计 ============
 export const getStats = () => request({ url: '/api/stats' })
+
+// ============ 支付 ============
+export const createPayment = (data: { orderId: number; payMethod: string }) =>
+  request({ url: '/api/payments/create', method: 'POST', data })
+export const simulatePay = (paymentNo: string) =>
+  request({ url: '/api/payments/simulate-pay', method: 'POST', data: { paymentNo } })
+export const getPaymentStatus = (paymentNo: string) =>
+  request({ url: `/api/payments/status/${paymentNo}` })
+export const getPaymentByOrder = (orderId: number) =>
+  request({ url: `/api/payments/order/${orderId}` })

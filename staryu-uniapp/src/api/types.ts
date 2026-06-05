@@ -82,9 +82,25 @@ export interface Order {
   itemName: string
   quantity: number
   totalPrice: number
-  status: number
+  totalAmount: number
+  status: string
+  payMethod?: string
   addressId?: number
   remark?: string
+  createdAt?: string
+}
+
+export interface PaymentRecord {
+  id: number
+  paymentNo: string
+  orderId: number
+  orderNo: string
+  userId: number
+  payMethod: string
+  amount: number
+  status: string
+  transactionId?: string
+  paidAt?: string
   createdAt?: string
 }
 

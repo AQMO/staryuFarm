@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>星语农庄 - 支付记录</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/element-ui@2.15.14/lib/theme-chalk/index.css">
+    <style>
+        [v-cloak] { display: none; }
+        body { margin: 0; font-family: "Microsoft YaHei", sans-serif; background: #f0f2f5; }
+        .app-container { display: flex; min-height: 100vh; }
+        .sidebar { width: 220px; background: #304156; color: #fff; position: fixed; top: 0; bottom: 0; overflow-y: auto; }
+        .sidebar .logo { padding: 20px; font-size: 18px; font-weight: bold; text-align: center; border-bottom: 1px solid #3a4a5e; }
+        .sidebar .logo span { color: #67c23a; }
+        .sidebar .menu-item { display: block; padding: 14px 20px; color: #bfcbd9; text-decoration: none; font-size: 14px; transition: all .3s; }
+        .sidebar .menu-item:hover, .sidebar .menu-item.active { background: #263445; color: #409eff; }
+        .main-content { margin-left: 220px; flex: 1; }
+        .header { background: #fff; padding: 16px 24px; box-shadow: 0 1px 4px rgba(0,21,41,.08); display: flex; justify-content: space-between; align-items: center; }
+        .header h2 { margin: 0; font-size: 18px; color: #303133; }
+        .header .user-info { display: flex; align-items: center; gap: 16px; color: #909399; font-size: 14px; }
+        .content { padding: 24px; }
+        .stat-cards { display: flex; gap: 16px; margin-bottom: 20px; }
+        .stat-card { background: #fff; border-radius: 8px; padding: 20px; flex: 1; box-shadow: 0 1px 4px rgba(0,21,41,.08); }
+        .stat-card .label { color: #909399; font-size: 14px; margin-bottom: 8px; }
+        .stat-card .value { font-size: 24px; font-weight: bold; }
+        .stat-card .value.green { color: #67c23a; }
+        .stat-card .value.orange { color: #e6a23c; }
+        .stat-card .value.blue { color: #409eff; }
+        .stat-card .value.red { color: #f56c6c; }
+        .pay-icon { font-size: 20px; vertical-align: middle; }
+    </style>
+</head>
+<body>
+<div id="app" v-cloak>
+    <div class="app-container">
+        <div class="sidebar">
+            <div class="logo"><span>星语</span>农庄</div>
+            <a v-for="menu in sidebarMenus" :key="menu.id"
+               :href="menu.url" :class="['menu-item', currentMenu === menu.menuKey ? 'active' : '']">
+               {{ menu.icon }} {{ menu.name }}
+            </a>
+        </div>
+        <div class="main-content">
+            <div class="header">
+                <h2>支付记录</h2>
+                <div class="user-info">
+                    <span>{{ adminName }}</span>
+                    <el-button size="mini" type="text" @click="logout">退出登录</el-button>
+                </div>
+            </div>
+            <div class="content">
+                <!-- 统计卡片 -->
+                <div class="stat-cards">
+                    <div class="stat-card">
+                        <div class="label">总支付金额</div>
+                        <div class="value green">¥{{ totalAmount }}</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="label">微信支付</div>
+                        <div class="value blue">¥{{ wechatAmount }}</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="label">支付宝支付</div>
+                        <div class="value orange">¥{{ alipayAmount }}</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="label">退款金额</div>
+                        <div class="value red">¥{{ refundAmount }}</div>
+                    </div>
+                </div>
+
+                <!-- 筛选 -->
+                <div style="margin-bottom:16px; display:flex; gap:12px;">
+                    <el-select v-model="filterStatus" placeholder="支付状态" clearable @change="loadList">
+                        <el-option label="待支付" value="pending"></el-option>
+                        <el-option label="支付成功" value="success"></el-option>
+                        <el-option label="支付失败" value="failed"></el-option>
+                        <el-option label="已退款" value="refunded"></el-option>
+                    </el-select>
+                    <el-select v-model="filterPayMethod" placeholder="支付方式" clearable @change="loadList">
+                        <el-option label="微信支付" value="wechat"></el-option>
+                        <el-option label="支付宝" value="alipay"></el-option>
+                    </el-select>
+                </div>
+
+                <!-- 表格 -->
+                <el-table :data="list" border stripe>
+                    <el-table-column prop="id" label="ID" width="60"></el-table-column>
+                    <el-table-column prop="paymentNo" label="支付流水号" width="200"></el-table-column>
+                    <el-table-column prop="orderNo" label="订单号" width="180"></el-table-column>
+                    <el-table-column label="支付方式" width="110">
+                        <template slot-scope="s">
+                            <span v-if="s.row.payMethod === 'wechat'" class="pay-icon" style="color:#07c160">💬 微信</span>
+                            <span v-else-if="s.row.payMethod === 'alipay'" class="pay-icon" style="color:#1677ff">🔵 支付宝</span>
+                            <span v-else>{{ s.row.payMethod }}</span>
+                        </template>
+                    </el-table-column>
+                    <el-table-column prop="amount" label="金额(元)" width="100">
+                        <template slot-scope="s"><b>¥{{ s.row.amount }}</b></template>
+                    </el-table-column>
+                    <el-table-column label="状态" width="100">
+                        <template slot-scope="s">
+                            <el-tag :type="statusType(s.row.status)">{{ statusMap[s.row.status] || s.row.status }}</el-tag>
+                        </template>
+                    </el-table-column>
+                    <el-table-column prop="transactionId" label="第三方流水号" width="200"></el-table-column>
+                    <el-table-column prop="paidAt" label="支付时间" width="160">
+                        <template slot-scope="s">{{ formatTime(s.row.paidAt) }}</template>
+                    </el-table-column>
+                    <el-table-column prop="createdAt" label="创建时间" width="160">
+                        <template slot-scope="s">{{ formatTime(s.row.createdAt) }}</template>
+                    </el-table-column>
+                    <el-table-column label="操作" width="100" fixed="right">
+                        <template slot-scope="s">
+                            <el-button size="mini" type="danger" v-if="s.row.status === 'success'" @click="refund(s.row)">退款</el-button>
+                        </template>
+                    </el-table-column>
+                </el-table>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/vue@2.7.16/dist/vue.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/element-ui@2.15.14/lib/index.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+<script src="/static/js/admin-common.js"></script>
+<script>
+new Vue({
+    el: '#app',
+    data() {
+        return {
+            currentMenu: 'payments',
+            sidebarMenus: [],
+            adminName: '管理员',
+            list: [],
+            filterStatus: '',
+            filterPayMethod: '',
+            statusMap: { pending: '待支付', success: '支付成功', failed: '支付失败', refunded: '已退款' }
+        };
+    },
+    computed: {
+        totalAmount() {
+            return this.list.filter(r => r.status === 'success').reduce((s, r) => s + (r.amount || 0), 0).toFixed(2);
+        },
+        wechatAmount() {
+            return this.list.filter(r => r.status === 'success' && r.payMethod === 'wechat').reduce((s, r) => s + (r.amount || 0), 0).toFixed(2);
+        },
+        alipayAmount() {
+            return this.list.filter(r => r.status === 'success' && r.payMethod === 'alipay').reduce((s, r) => s + (r.amount || 0), 0).toFixed(2);
+        },
+        refundAmount() {
+            return this.list.filter(r => r.status === 'refunded').reduce((s, r) => s + (r.amount || 0), 0).toFixed(2);
+        }
+    },
+    created() { initAdminPage(this, 'payments'); this.loadList(); },
+    methods: {
+        logout: adminLogout,
+        loadList() {
+            let url = '/api/payments/list';
+            let params = [];
+            if (this.filterStatus) params.push('status=' + this.filterStatus);
+            if (this.filterPayMethod) params.push('payMethod=' + this.filterPayMethod);
+            if (params.length) url += '?' + params.join('&');
+            $.getJSON(url, d => { this.list = d.data || []; });
+        },
+        statusType(s) {
+            return { pending: 'warning', success: 'success', failed: 'danger', refunded: 'info' }[s] || '';
+        },
+        formatTime(t) {
+            if (!t) return '-';
+            if (Array.isArray(t)) {
+                const [y, m, d, h, min] = t;
+                return y + '-' + String(m).padStart(2, '0') + '-' + String(d).padStart(2, '0') + ' ' + String(h).padStart(2, '0') + ':' + String(min).padStart(2, '0');
+            }
+            return String(t).substring(0, 16);
+        },
+        refund(row) {
+            this.$confirm('确认对该笔支付进行退款？退款后订单将取消。', '退款确认', {
+                confirmButtonText: '确定退款',
+                cancelButtonText: '取消',
+                type: 'warning'
+            }).then(() => {
+                $.ajax({
+                    url: '/api/payments/refund/' + row.id,
+                    method: 'POST',
+                    success: () => { this.$message.success('退款成功'); this.loadList(); },
+                    error: () => { this.$message.error('退款失败'); }
+                });
+            }).catch(() => {});
+        }
+    }
+});
+</script>
+</body>
+</html>

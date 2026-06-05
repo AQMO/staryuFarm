@@ -62,6 +62,13 @@
         "navigationBarTitleText": "个人中心",
         "navigationStyle": "custom"
       }
+    },
+    {
+      "path": "pages/payment/index",
+      "style": {
+        "navigationBarTitleText": "收银台",
+        "navigationStyle": "custom"
+      }
     }
   ],
   "globalStyle": {

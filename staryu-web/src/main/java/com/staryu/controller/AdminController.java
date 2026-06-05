@@ -76,4 +76,9 @@ public class AdminController {
     public String permission() {
         return "redirect:/admin/permission.html";
     }
+
+    @GetMapping("/payments")
+    public String payments() {
+        return "redirect:/admin/payments.html";
+    }
 }

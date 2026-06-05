@@ -45,6 +45,9 @@ public class Order {
     @Column(name = "status", length = 20, nullable = false)
     private String status = "pending";
 
+    @Column(name = "pay_method", length = 20)
+    private String payMethod; // wechat / alipay
+
     @Column(name = "contact_name", length = 50)
     private String contactName;
 
@@ -116,6 +119,8 @@ public class Order {
     public void setTotalAmount(BigDecimal totalAmount) { this.totalAmount = totalAmount; }
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
+    public String getPayMethod() { return payMethod; }
+    public void setPayMethod(String payMethod) { this.payMethod = payMethod; }
     public String getContactName() { return contactName; }
     public void setContactName(String contactName) { this.contactName = contactName; }
     public String getContactPhone() { return contactPhone; }

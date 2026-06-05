@@ -25,6 +25,9 @@
         <view class="flex-row">
           <text class="order-item-name">{{ order.itemName }}</text>
           <text class="text-gray" style="margin-left:16rpx">x{{ order.quantity }}</text>
+          <text v-if="order.payMethod" class="pay-tag" :class="order.payMethod === 'wechat' ? 'pay-wechat' : 'pay-alipay'">
+            {{ order.payMethod === 'wechat' ? '微信' : '支付宝' }}
+          </text>
         </view>
         <view class="divider"></view>
         <view class="flex-between">
@@ -32,7 +35,12 @@
             <text class="symbol">¥</text>
             <text class="amount">{{ order.totalPrice }}</text>
           </text>
-          <text class="text-hint" style="font-size:24rpx">{{ formatDate(order.createdAt) }}</text>
+          <view class="order-actions">
+            <text class="text-hint" style="font-size:24rpx">{{ formatDate(order.createdAt) }}</text>
+            <view v-if="order.status === 'pending'" class="pay-btn-small" @tap.stop="goPay(order)">
+              <text class="pay-btn-text">去支付</text>
+            </view>
+          </view>
         </view>
       </view>
     </view>
@@ -65,14 +73,19 @@ const filteredOrders = computed(() => {
   return orders.value.filter(o => o.type === activeTab.value)
 })
 
-function statusText(status: number): string {
-  const map: Record<number, string> = { 0: '待支付', 1: '已支付', 2: '已完成', 3: '已取消' }
+function statusText(status: string): string {
+  const map: Record<string, string> = { pending: '待支付', paid: '已支付', completed: '已完成', cancelled: '已取消' }
   return map[status] || '未知'
 }
 
-function statusTagClass(status: number): string {
-  const map: Record<number, string> = { 0: 'tag-orange', 1: 'tag-blue', 2: 'tag-green', 3: 'tag-gray' }
+function statusTagClass(status: string): string {
+  const map: Record<string, string> = { pending: 'tag-orange', paid: 'tag-blue', completed: 'tag-green', cancelled: 'tag-gray' }
   return map[status] || 'tag-gray'
+}
+
+function goPay(order: Order) {
+  const orderStr = encodeURIComponent(JSON.stringify(order))
+  uni.navigateTo({ url: `/pages/payment/index?order=${orderStr}` })
 }
 
 function formatDate(createdAt: any): string {
@@ -131,5 +144,40 @@ onMounted(async () => {
   font-size: 30rpx;
   font-weight: 600;
   color: #111827;
+}
+
+.order-actions {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+}
+
+.pay-btn-small {
+  background: #16a34a;
+  border-radius: 32rpx;
+  padding: 8rpx 24rpx;
+}
+
+.pay-btn-text {
+  color: #fff;
+  font-size: 24rpx;
+  font-weight: 600;
+}
+
+.pay-tag {
+  font-size: 20rpx;
+  padding: 4rpx 12rpx;
+  border-radius: 8rpx;
+  margin-left: 12rpx;
+}
+
+.pay-wechat {
+  background: #e8f8ee;
+  color: #07c160;
+}
+
+.pay-alipay {
+  background: #e8f0fe;
+  color: #1677ff;
 }
 </style>

@@ -140,6 +140,7 @@ CREATE TABLE IF NOT EXISTS orders (
     total_price DECIMAL(10,2) NOT NULL,
     total_amount DECIMAL(10,2) NOT NULL,
     status VARCHAR(20) NOT NULL DEFAULT 'pending',
+    pay_method VARCHAR(20) DEFAULT NULL COMMENT 'wechat/alipay',
     pay_time DATETIME,
     address_info TEXT,
     remark VARCHAR(200),
@@ -197,6 +198,26 @@ CREATE TABLE IF NOT EXISTS role_menu (
     UNIQUE KEY uk_role_menu (role, menu_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+-- 支付记录表
+CREATE TABLE IF NOT EXISTS payment_records (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    payment_no VARCHAR(50) NOT NULL UNIQUE COMMENT '支付流水号',
+    order_id BIGINT NOT NULL COMMENT '关联订单ID',
+    order_no VARCHAR(50) NOT NULL COMMENT '关联订单号',
+    user_id BIGINT NOT NULL COMMENT '用户ID',
+    pay_method VARCHAR(20) NOT NULL COMMENT '支付方式: wechat/alipay',
+    amount DECIMAL(10,2) NOT NULL COMMENT '支付金额',
+    status VARCHAR(20) NOT NULL DEFAULT 'pending' COMMENT '支付状态: pending/success/failed/refunded',
+    transaction_id VARCHAR(100) DEFAULT NULL COMMENT '第三方支付流水号',
+    callback_data TEXT COMMENT '支付回调原始数据',
+    paid_at DATETIME DEFAULT NULL COMMENT '支付成功时间',
+    created_at DATETIME DEFAULT NULL,
+    updated_at DATETIME DEFAULT NULL,
+    INDEX idx_order_id (order_id),
+    INDEX idx_user_id (user_id),
+    INDEX idx_status (status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='支付记录表';
+
 -- ===== 初始数据 =====
 
 -- 管理员账号 (用户名: admin, 密码: admin123)
@@ -225,7 +246,8 @@ INSERT INTO menus (name, menu_key, url, icon, sort_order, is_visible) VALUES
   ('用户管理', 'users', '/admin/users', '👥', 8, 1),
   ('模块配置', 'config', '/admin/config', '⚙️', 9, 1),
   ('菜单管理', 'menu', '/admin/menu', '📑', 10, 1),
-  ('权限配置', 'permission', '/admin/permission', '🔐', 11, 1)
+  ('权限配置', 'permission', '/admin/permission', '🔐', 11, 1),
+  ('支付记录', 'payments', '/admin/payments', '💳', 12, 1)
 ON DUPLICATE KEY UPDATE name=VALUES(name), url=VALUES(url), icon=VALUES(icon), sort_order=VALUES(sort_order);
 
 -- admin 角色拥有所有菜单权限
