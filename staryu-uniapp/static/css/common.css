@@ -1,0 +1,149 @@
+/* 公共样式 */
+page {
+  background-color: #f9fafb;
+}
+
+/* 容器 */
+.page {
+  min-height: 100vh;
+  padding-bottom: 120rpx;
+}
+
+/* 卡片 */
+.card {
+  background: #ffffff;
+  border-radius: 20rpx;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+}
+
+/* Flex 布局 */
+.flex-between {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.flex-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* 价格 */
+.price {
+  color: #16a34a;
+  font-weight: 600;
+}
+
+.price .symbol {
+  font-size: 24rpx;
+}
+
+.price .amount {
+  font-size: 36rpx;
+  font-weight: 700;
+}
+
+/* 文本 */
+.text-gray {
+  color: #9ca3af;
+  font-size: 24rpx;
+}
+
+/* 按钮 */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 40rpx;
+  font-size: 28rpx;
+  padding: 16rpx 32rpx;
+}
+
+.btn-primary {
+  background: #16a34a;
+  color: #ffffff;
+}
+
+.btn-sm {
+  padding: 8rpx 20rpx;
+  font-size: 24rpx;
+  border-radius: 20rpx;
+}
+
+.btn-outline {
+  border: 2rpx solid #16a34a;
+  color: #16a34a;
+  background: #ffffff;
+}
+
+/* 标签 */
+.tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 4rpx 16rpx;
+  border-radius: 20rpx;
+  font-size: 22rpx;
+}
+
+.tag-green {
+  background: #dcfce7;
+  color: #16a34a;
+}
+
+.tag-orange {
+  background: #ffedd5;
+  color: #ea580c;
+}
+
+.tag-blue {
+  background: #dbeafe;
+  color: #2563eb;
+}
+
+.tag-red {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.tag-gray {
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
+/* 空状态 */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 80rpx 0;
+}
+
+.empty-state .icon {
+  font-size: 80rpx;
+  margin-bottom: 20rpx;
+}
+
+.empty-state .text {
+  color: #9ca3af;
+  font-size: 28rpx;
+}
+
+/* 分割线 */
+.divider {
+  height: 2rpx;
+  background: #f3f4f6;
+  margin: 24rpx 0;
+}
+
+/* 页面头部 */
+.page-header {
+  padding: 32rpx;
+}
+
+.page-header .title {
+  font-size: 36rpx;
+  font-weight: 700;
+  color: #111827;
+}
