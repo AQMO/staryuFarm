@@ -33,3 +33,6 @@ unpackage/
 .env.local
 dependency-reduced-pom.xml
 .cozeproj/reduction
+
+# Preview files
+.preview
