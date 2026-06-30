@@ -36,3 +36,4 @@ dependency-reduced-pom.xml
 
 # Preview files
 .preview
+.codegraph
