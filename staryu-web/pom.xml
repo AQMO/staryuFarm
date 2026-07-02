@@ -119,6 +119,13 @@
             <version>2.13.0</version>
         </dependency>
 
+        <!-- MinIO SDK -->
+        <dependency>
+            <groupId>io.minio</groupId>
+            <artifactId>minio</artifactId>
+            <version>8.5.7</version>
+        </dependency>
+
         <!-- SLF4J + Logback -->
         <dependency>
             <groupId>org.slf4j</groupId>
