@@ -49,6 +49,19 @@ public class MinioService {
             } else {
                 logger.info("MinIO bucket '{}' already exists", minioConfig.getBucket());
             }
+
+            // 设置 bucket 策略为公开读取
+            String policy = String.format(
+                    "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Principal\":{\"AWS\":[\"*\"]},\"Action\":[\"s3:GetObject\"],\"Resource\":[\"arn:aws:s3:::%s/*\"]}]}",
+                    minioConfig.getBucket()
+            );
+            minioClient.setBucketPolicy(
+                    SetBucketPolicyArgs.builder()
+                            .bucket(minioConfig.getBucket())
+                            .config(policy)
+                            .build()
+            );
+            logger.info("MinIO bucket '{}' policy set to public read", minioConfig.getBucket());
         } catch (Exception e) {
             logger.error("MinIO init error: {}", e.getMessage(), e);
         }
