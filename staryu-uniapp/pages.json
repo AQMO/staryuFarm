@@ -98,8 +98,8 @@
       {
         "pagePath": "pages/profile/index",
         "text": "我的",
-        "iconPath": "static/tabbar/profile.png",
-        "selectedIconPath": "static/tabbar/profile-active.png"
+        "iconPath": "static/tabbar/me.png",
+        "selectedIconPath": "static/tabbar/me-active.png"
       }
     ]
   }

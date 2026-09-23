@@ -36,12 +36,14 @@
         <text class="arrow">›</text>
       </view>
     </view>
+    <custom-tabbar :current="2"></custom-tabbar>
   </view>
 </template>
 
 <script setup>
 import { computed } from 'vue'
 import { useUserStore } from '../../stores/user.js'
+import CustomTabbar from '../../components/custom-tabbar/custom-tabbar.vue'
 
 const userStore = useUserStore()
 const user = computed(() => userStore.userInfo)
@@ -56,6 +58,7 @@ function goPage(url) {
 </script>
 
 <style scoped>
+.page { padding-bottom: 140rpx; }
 .profile-card {
   display: flex;
   flex-direction: column;

@@ -30,12 +30,14 @@
       <text class="icon">📋</text>
       <text class="text">暂无订单</text>
     </view>
+    <custom-tabbar :current="1"></custom-tabbar>
   </view>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue'
 import { getOrders } from '../../api/index.js'
+import CustomTabbar from '../../components/custom-tabbar/custom-tabbar.vue'
 
 const orders = ref([])
 const statusMap = {
@@ -61,6 +63,7 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+.page { padding-bottom: 140rpx; }
 .order-card {
   margin: 16rpx 24rpx;
   padding: 24rpx;

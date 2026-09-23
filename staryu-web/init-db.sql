@@ -247,7 +247,8 @@ INSERT INTO menus (name, menu_key, url, icon, sort_order, is_visible) VALUES
   ('模块配置', 'config', '/admin/config', '⚙️', 9, 1),
   ('菜单管理', 'menu', '/admin/menu', '📑', 10, 1),
   ('权限配置', 'permission', '/admin/permission', '🔐', 11, 1),
-  ('支付记录', 'payments', '/admin/payments', '💳', 12, 1)
+  ('支付记录', 'payments', '/admin/payments', '💳', 12, 1),
+  ('TabBar管理', 'tabbar', '/admin/tabbar', '📱', 13, 1)
 ON DUPLICATE KEY UPDATE name=VALUES(name), url=VALUES(url), icon=VALUES(icon), sort_order=VALUES(sort_order);
 
 -- admin 角色拥有所有菜单权限
@@ -259,3 +260,23 @@ ON DUPLICATE KEY UPDATE role=VALUES(role);
 INSERT INTO role_menu (role, menu_id, created_at)
 SELECT 'operator', id, NOW() FROM menus WHERE menu_key IN ('dashboard', 'rooms', 'food', 'products', 'fruit-trees', 'plots', 'orders')
 ON DUPLICATE KEY UPDATE role=VALUES(role);
+
+-- ============================================
+-- 小程序TabBar配置表
+-- ============================================
+DROP TABLE IF EXISTS tabbar_config;
+CREATE TABLE tabbar_config (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(50) NOT NULL COMMENT 'Tab名称',
+  page_path VARCHAR(200) NOT NULL COMMENT '页面路径(如 pages/home/index)',
+  icon_path VARCHAR(500) COMMENT '默认图标URL',
+  selected_icon_path VARCHAR(500) COMMENT '选中图标URL',
+  sort_order INT DEFAULT 0 COMMENT '排序',
+  is_visible INT DEFAULT 1 COMMENT '是否显示：1显示 0隐藏'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='小程序TabBar配置';
+
+-- 初始TabBar数据（使用本地路径，可在后台替换为MinIO URL）
+INSERT INTO tabbar_config (name, page_path, icon_path, selected_icon_path, sort_order, is_visible) VALUES
+  ('首页', 'pages/home/index', '/static/tabbar/home.png', '/static/tabbar/home-active.png', 1, 1),
+  ('订单', 'pages/orders/index', '/static/tabbar/order.png', '/static/tabbar/order-active.png', 2, 1),
+  ('我的', 'pages/profile/index', '/static/tabbar/me.png', '/static/tabbar/me-active.png', 3, 1);

@@ -54,6 +54,7 @@
         <text class="text">暂无房间</text>
       </view>
     </view>
+    <custom-tabbar :current="0"></custom-tabbar>
   </view>
 </template>
 
@@ -61,6 +62,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { getModuleConfig, getRooms } from '../../api/index.js'
 import { useConfigStore } from '../../stores/config.js'
+import CustomTabbar from '../../components/custom-tabbar/custom-tabbar.vue'
 
 const configStore = useConfigStore()
 const rooms = ref([])
@@ -107,6 +109,7 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+.page { padding-bottom: 140rpx; }
 .header {
   position: relative;
   height: 360rpx;

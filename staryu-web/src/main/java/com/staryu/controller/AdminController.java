@@ -81,4 +81,9 @@ public class AdminController {
     public String payments() {
         return "redirect:/admin/payments.html";
     }
+
+    @GetMapping("/tabbar")
+    public String tabbar() {
+        return "redirect:/admin/tabbar.html";
+    }
 }

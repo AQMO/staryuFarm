@@ -31,6 +31,43 @@ public class BusinessService {
     @Autowired private MenuDao menuDao;
     @Autowired private RoleMenuDao roleMenuDao;
     @Autowired private PaymentRecordDao paymentRecordDao;
+    @Autowired private TabbarDao tabbarDao;
+
+    // ===== Tabbar =====
+    public List<Tabbar> getAllTabbars() {
+        return tabbarDao.findAllOrdered();
+    }
+
+    public List<Tabbar> getVisibleTabbars() {
+        return tabbarDao.findVisible();
+    }
+
+    public Tabbar saveTabbar(Tabbar tabbar) {
+        if (tabbar.getId() != null) {
+            Tabbar existing = tabbarDao.findById(tabbar.getId()).orElse(null);
+            if (existing != null) {
+                existing.setName(tabbar.getName());
+                existing.setPagePath(tabbar.getPagePath());
+                existing.setIconPath(tabbar.getIconPath());
+                existing.setSelectedIconPath(tabbar.getSelectedIconPath());
+                existing.setSortOrder(tabbar.getSortOrder());
+                existing.setIsVisible(tabbar.getIsVisible());
+                tabbarDao.save(existing);
+                return existing;
+            }
+        }
+        tabbarDao.save(tabbar);
+        return tabbar;
+    }
+
+    public boolean deleteTabbar(Integer id) {
+        try {
+            tabbarDao.deleteById(id);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
 
     // ===== Module Config =====
     public List<ModuleConfig> getAllModules() {
