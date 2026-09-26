@@ -58,23 +58,27 @@
   </view>
 </template>
 
-<script setup>
-import { ref, onMounted } from 'vue'
+<script>
 import { getFruitTrees, getPlots } from '../../api/index.js'
 
-const fruitTrees = ref([])
-const plots = ref([])
-const activeType = ref('fruit_tree')
-
-onMounted(async () => {
-  try {
-    const [treeRes, plotRes] = await Promise.all([getFruitTrees(), getPlots()])
-    fruitTrees.value = treeRes.data || []
-    plots.value = plotRes.data || []
-  } catch (e) {
-    console.error('Failed to load rent data', e)
+export default {
+  data() {
+    return {
+      fruitTrees: [],
+      plots: [],
+      activeType: 'fruit_tree'
+    }
+  },
+  async onLoad() {
+    try {
+      const [treeRes, plotRes] = await Promise.all([getFruitTrees(), getPlots()])
+      this.fruitTrees = treeRes.data || []
+      this.plots = plotRes.data || []
+    } catch (e) {
+      console.error('Failed to load rent data', e)
+    }
   }
-})
+}
 </script>
 
 <style scoped>

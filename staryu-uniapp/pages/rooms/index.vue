@@ -32,24 +32,29 @@
   </view>
 </template>
 
-<script setup>
-import { ref, onMounted } from 'vue'
+<script>
 import { getRooms } from '../../api/index.js'
 
-const rooms = ref([])
-
-function goDetail(id) {
-  uni.navigateTo({ url: '/pages/rooms/detail?id=' + id })
-}
-
-onMounted(async () => {
-  try {
-    const res = await getRooms()
-    rooms.value = res.data || []
-  } catch (e) {
-    console.error('Failed to load rooms', e)
+export default {
+  data() {
+    return {
+      rooms: []
+    }
+  },
+  async onLoad() {
+    try {
+      const res = await getRooms()
+      this.rooms = res.data || []
+    } catch (e) {
+      console.error('Failed to load rooms', e)
+    }
+  },
+  methods: {
+    goDetail(id) {
+      uni.navigateTo({ url: '/pages/rooms/detail?id=' + id })
+    }
   }
-})
+}
 </script>
 
 <style scoped>

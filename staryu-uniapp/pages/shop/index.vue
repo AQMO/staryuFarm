@@ -28,24 +28,29 @@
   </view>
 </template>
 
-<script setup>
-import { ref, onMounted } from 'vue'
+<script>
 import { getProducts } from '../../api/index.js'
 
-const products = ref([])
-
-function goDetail(id) {
-  uni.navigateTo({ url: '/pages/shop/detail?id=' + id })
-}
-
-onMounted(async () => {
-  try {
-    const res = await getProducts()
-    products.value = res.data || []
-  } catch (e) {
-    console.error('Failed to load products', e)
+export default {
+  data() {
+    return {
+      products: []
+    }
+  },
+  async onLoad() {
+    try {
+      const res = await getProducts()
+      this.products = res.data || []
+    } catch (e) {
+      console.error('Failed to load products', e)
+    }
+  },
+  methods: {
+    goDetail(id) {
+      uni.navigateTo({ url: '/pages/shop/detail?id=' + id })
+    }
   }
-})
+}
 </script>
 
 <style scoped>

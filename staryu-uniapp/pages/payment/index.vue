@@ -70,73 +70,73 @@
   </view>
 </template>
 
-<script setup>
-import { ref, onMounted } from 'vue'
+<script>
 import { getOrder, createPayment, simulatePay } from '../../api/index.js'
 
-const order = ref(null)
-const payMethod = ref('wechat')
-const paying = ref(false)
-const showResult = ref(false)
-const paySuccess = ref(false)
-const payErrorMsg = ref('')
-
-async function handlePay() {
-  if (paying.value || !order.value) return
-  paying.value = true
-
-  try {
-    // 1. 创建支付
-    const createRes = await createPayment({
-      orderId: order.value.id,
-      payMethod: payMethod.value
-    })
-
-    if (!createRes.data) {
-      payErrorMsg.value = createRes.error || '创建支付失败'
-      paySuccess.value = false
-      showResult.value = true
-      paying.value = false
-      return
+export default {
+  data() {
+    return {
+      order: null,
+      payMethod: 'wechat',
+      paying: false,
+      showResult: false,
+      paySuccess: false,
+      payErrorMsg: ''
     }
-
-    const paymentNo = createRes.data.paymentNo
-
-    // 2. 模拟支付（开发模式）
-    const payRes = await simulatePay({ paymentNo })
-
-    if (payRes.data) {
-      paySuccess.value = true
-    } else {
-      paySuccess.value = false
-      payErrorMsg.value = payRes.error || '支付失败'
+  },
+  async onLoad(options) {
+    const id = options?.id
+    if (id) {
+      try {
+        const res = await getOrder(Number(id))
+        this.order = res.data
+      } catch (e) {
+        console.error('Failed to load order', e)
+      }
     }
-  } catch (e) {
-    paySuccess.value = false
-    payErrorMsg.value = '网络异常，请重试'
+  },
+  methods: {
+    async handlePay() {
+      if (this.paying || !this.order) return
+      this.paying = true
+
+      try {
+        const createRes = await createPayment({
+          orderId: this.order.id,
+          payMethod: this.payMethod
+        })
+
+        if (!createRes.data) {
+          this.payErrorMsg = createRes.error || '创建支付失败'
+          this.paySuccess = false
+          this.showResult = true
+          this.paying = false
+          return
+        }
+
+        const paymentNo = createRes.data.paymentNo
+
+        const payRes = await simulatePay({ paymentNo })
+
+        if (payRes.data) {
+          this.paySuccess = true
+        } else {
+          this.paySuccess = false
+          this.payErrorMsg = payRes.error || '支付失败'
+        }
+      } catch (e) {
+        this.paySuccess = false
+        this.payErrorMsg = '网络异常，请重试'
+      }
+
+      this.showResult = true
+      this.paying = false
+    },
+    goBack() {
+      uni.navigateBack()
+    }
   }
-
-  showResult.value = true
-  paying.value = false
 }
-
-function goBack() {
-  uni.navigateBack()
-}
-
-onMounted(async () => {
-  const pages = getCurrentPages()
-  const currentPage = pages[pages.length - 1]
-  const id = currentPage.options?.id
-  if (id) {
-    try {
-      const res = await getOrder(Number(id))
-      order.value = res.data
-    } catch (e) {
-      console.error('Failed to load order', e)
-    }
-  }
-})
 </script>
 
 <style scoped>

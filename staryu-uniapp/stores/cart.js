@@ -1,67 +1,124 @@
-import { reactive, computed } from 'vue'
-import { getCart, addToCart as apiAddToCart, updateCartItem as apiUpdateCartItem, deleteCartItem as apiDeleteCartItem } from '../api/index.js'
-import { useUserStore } from './user.js'
+/**
+ * 购物车 store（纯 JS，不依赖 Vue）
+ */
 
-// Singleton reactive state
-const state = reactive({
-  items: []
-})
+var STORAGE_KEY = 'cartItems'
 
-const totalCount = computed(() => state.items.reduce((sum, item) => sum + item.quantity, 0))
-const totalPrice = computed(() => state.items.reduce((sum, item) => sum + item.itemPrice * item.quantity, 0))
+var state = {
+  items: [],
+  loading: false
+}
 
-async function loadCart() {
-  const userStore = useUserStore()
-  if (!userStore.userId) return
-  try {
-    const res = await getCart(userStore.userId)
-    state.items = res.data || []
-  } catch (e) {
-    console.error('Failed to load cart', e)
+var listeners = []
+
+function notify() {
+  for (var i = 0; i < listeners.length; i++) {
+    listeners[i]()
   }
 }
 
-async function addItem(data) {
-  const userStore = useUserStore()
-  if (!userStore.userId) {
-    uni.showToast({ title: '请先登录', icon: 'none' })
-    return
-  }
-  try {
-    await apiAddToCart({ ...data, userId: userStore.userId })
-    await loadCart()
-    uni.showToast({ title: '已加入购物车', icon: 'success' })
-  } catch (e) {
-    console.error('Failed to add to cart', e)
+function subscribe(fn) {
+  listeners.push(fn)
+  return function() {
+    var idx = listeners.indexOf(fn)
+    if (idx > -1) listeners.splice(idx, 1)
   }
 }
 
-async function updateItem(id, data) {
+function loadFromStorage() {
   try {
-    await apiUpdateCartItem(id, data)
-    await loadCart()
-  } catch (e) {
-    console.error('Failed to update cart item', e)
-  }
+    var data = uni.getStorageSync(STORAGE_KEY)
+    if (data) state.items = JSON.parse(data)
+  } catch(e) {}
 }
 
-async function removeItem(id) {
+function saveToStorage() {
   try {
-    await apiDeleteCartItem(id)
-    await loadCart()
-  } catch (e) {
-    console.error('Failed to delete cart item', e)
-  }
+    uni.setStorageSync(STORAGE_KEY, JSON.stringify(state.items))
+  } catch(e) {}
 }
 
-export function useCartStore() {
-  return {
-    items: state.items,
-    totalCount,
-    totalPrice,
-    loadCart,
-    addItem,
-    updateItem,
-    removeItem
+function addToCart(product) {
+  var found = null
+  for (var i = 0; i < state.items.length; i++) {
+    if (state.items[i].id === product.id) {
+      found = state.items[i]
+      break
+    }
   }
+  if (found) {
+    found.quantity = (found.quantity || 1) + 1
+  } else {
+    state.items.push({
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      pic: product.pic || '',
+      quantity: 1,
+      unit: product.unit || '份'
+    })
+  }
+  saveToStorage()
+  notify()
+}
+
+function removeFromCart(productId) {
+  var newItems = []
+  for (var i = 0; i < state.items.length; i++) {
+    if (state.items[i].id !== productId) {
+      newItems.push(state.items[i])
+    }
+  }
+  state.items = newItems
+  saveToStorage()
+  notify()
+}
+
+function updateQuantity(productId, quantity) {
+  for (var i = 0; i < state.items.length; i++) {
+    if (state.items[i].id === productId) {
+      if (quantity <= 0) {
+        removeFromCart(productId)
+        return
+      }
+      state.items[i].quantity = quantity
+      break
+    }
+  }
+  saveToStorage()
+  notify()
+}
+
+function clearCart() {
+  state.items = []
+  saveToStorage()
+  notify()
+}
+
+function getTotalCount() {
+  var total = 0
+  for (var i = 0; i < state.items.length; i++) {
+    total += state.items[i].quantity || 0
+  }
+  return total
+}
+
+function getTotalPrice() {
+  var total = 0
+  for (var i = 0; i < state.items.length; i++) {
+    total += (state.items[i].price || 0) * (state.items[i].quantity || 0)
+  }
+  return total
+}
+
+module.exports = {
+  get state() { return state },
+  subscribe: subscribe,
+  loadFromStorage: loadFromStorage,
+  addToCart: addToCart,
+  removeFromCart: removeFromCart,
+  updateQuantity: updateQuantity,
+  clearCart: clearCart,
+  getTotalCount: getTotalCount,
+  getTotalPrice: getTotalPrice
 }

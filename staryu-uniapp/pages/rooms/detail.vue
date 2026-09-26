@@ -44,38 +44,40 @@
   </view>
 </template>
 
-<script setup>
-import { ref, onMounted } from 'vue'
+<script>
 import { getRoom } from '../../api/index.js'
 
-const room = ref(null)
-
-function goBack() {
-  uni.navigateBack()
-}
-
-function handleBook() {
-  if (!room.value) return
-  if (room.value.stock <= 0) {
-    uni.showToast({ title: '房间已满', icon: 'none' })
-    return
-  }
-  uni.showToast({ title: '预订功能开发中', icon: 'none' })
-}
-
-onMounted(async () => {
-  const pages = getCurrentPages()
-  const currentPage = pages[pages.length - 1]
-  const id = currentPage.options?.id
-  if (id) {
-    try {
-      const res = await getRoom(Number(id))
-      room.value = res.data
-    } catch (e) {
-      console.error('Failed to load room', e)
+export default {
+  data() {
+    return {
+      room: null
+    }
+  },
+  async onLoad(options) {
+    const id = options?.id
+    if (id) {
+      try {
+        const res = await getRoom(Number(id))
+        this.room = res.data
+      } catch (e) {
+        console.error('Failed to load room', e)
+      }
+    }
+  },
+  methods: {
+    goBack() {
+      uni.navigateBack()
+    },
+    handleBook() {
+      if (!this.room) return
+      if (this.room.stock <= 0) {
+        uni.showToast({ title: '房间已满', icon: 'none' })
+        return
+      }
+      uni.showToast({ title: '预订功能开发中', icon: 'none' })
     }
   }
-})
+}
 </script>
 
 <style scoped>

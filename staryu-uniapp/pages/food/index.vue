@@ -47,47 +47,56 @@
   </view>
 </template>
 
-<script setup>
-import { ref, computed, onMounted } from 'vue'
+<script>
 import { getFoods, getFoodCategories } from '../../api/index.js'
 import { useCartStore } from '../../stores/cart.js'
 
 const cartStore = useCartStore()
-const categories = ref([])
-const foods = ref([])
-const currentCat = ref(0)
 
-const filteredFoods = computed(() => {
-  if (currentCat.value === 0) return foods.value
-  return foods.value.filter(f => f.categoryId === currentCat.value)
-})
-
-const cartCount = computed(() => cartStore.totalCount)
-const cartTotal = computed(() => cartStore.totalPrice)
-
-function addToCart(food) {
-  cartStore.addItem({
-    id: food.id,
-    name: food.name,
-    price: food.price,
-    pic: food.pic
-  })
-  uni.showToast({ title: '已加入购物车', icon: 'success' })
-}
-
-function goCart() {
-  uni.navigateTo({ url: '/pages/orders/index' })
-}
-
-onMounted(async () => {
-  try {
-    const [catRes, foodRes] = await Promise.all([getFoodCategories(), getFoods()])
-    categories.value = [{ id: 0, name: '全部' }, ...(catRes.data || [])]
-    foods.value = foodRes.data || []
-  } catch (e) {
-    console.error('Failed to load foods', e)
+export default {
+  data() {
+    return {
+      categories: [],
+      foods: [],
+      currentCat: 0
+    }
+  },
+  computed: {
+    filteredFoods() {
+      if (this.currentCat === 0) return this.foods
+      return this.foods.filter(f => f.categoryId === this.currentCat)
+    },
+    cartCount() {
+      return cartStore.getTotalCount()
+    },
+    cartTotal() {
+      return cartStore.getTotalPrice()
+    }
+  },
+  async onLoad() {
+    try {
+      const [catRes, foodRes] = await Promise.all([getFoodCategories(), getFoods()])
+      this.categories = [{ id: 0, name: '全部' }, ...(catRes.data || [])]
+      this.foods = foodRes.data || []
+    } catch (e) {
+      console.error('Failed to load foods', e)
+    }
+  },
+  methods: {
+    addToCart(food) {
+      cartStore.addToCart({
+        id: food.id,
+        name: food.name,
+        price: food.price,
+        pic: food.pic
+      })
+      uni.showToast({ title: '已加入购物车', icon: 'success' })
+    },
+    goCart() {
+      uni.navigateTo({ url: '/pages/orders/index' })
+    }
   }
-})
+}
 </script>
 
 <style scoped>

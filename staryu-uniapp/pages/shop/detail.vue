@@ -22,29 +22,32 @@
   <view v-else class="loading"><text>加载中...</text></view>
 </template>
 
-<script setup>
-import { ref, onMounted } from 'vue'
+<script>
 import { getProduct } from '../../api/index.js'
 
-const product = ref(null)
-
-function handleBuy() {
-  uni.showToast({ title: '购买功能开发中', icon: 'none' })
-}
-
-onMounted(async () => {
-  const pages = getCurrentPages()
-  const currentPage = pages[pages.length - 1]
-  const id = currentPage.options?.id
-  if (id) {
-    try {
-      const res = await getProduct(Number(id))
-      product.value = res.data
-    } catch (e) {
-      console.error('Failed to load product', e)
+export default {
+  data() {
+    return {
+      product: null
+    }
+  },
+  async onLoad(options) {
+    const id = options?.id
+    if (id) {
+      try {
+        const res = await getProduct(Number(id))
+        this.product = res.data
+      } catch (e) {
+        console.error('Failed to load product', e)
+      }
+    }
+  },
+  methods: {
+    handleBuy() {
+      uni.showToast({ title: '购买功能开发中', icon: 'none' })
     }
   }
-})
+}
 </script>
 
 <style scoped>

@@ -40,20 +40,30 @@
   </view>
 </template>
 
-<script setup>
-import { computed } from 'vue'
+<script>
 import { useUserStore } from '../../stores/user.js'
 import CustomTabbar from '../../components/custom-tabbar/custom-tabbar.vue'
 
 const userStore = useUserStore()
-const user = computed(() => userStore.userInfo)
 
-function goLogin() {
-  uni.showToast({ title: '登录功能开发中', icon: 'none' })
-}
-
-function goPage(url) {
-  uni.navigateTo({ url })
+export default {
+  components: { CustomTabbar },
+  data() {
+    return {}
+  },
+  computed: {
+    user() {
+      return userStore.state.userInfo
+    }
+  },
+  methods: {
+    goLogin() {
+      uni.showToast({ title: '登录功能开发中', icon: 'none' })
+    },
+    goPage(url) {
+      uni.navigateTo({ url })
+    }
+  }
 }
 </script>
 

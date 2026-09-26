@@ -34,32 +34,38 @@
   </view>
 </template>
 
-<script setup>
-import { ref, onMounted } from 'vue'
+<script>
 import { getOrders } from '../../api/index.js'
 import CustomTabbar from '../../components/custom-tabbar/custom-tabbar.vue'
 
-const orders = ref([])
-const statusMap = {
-  pending: '待支付',
-  paid: '已支付',
-  completed: '已完成',
-  cancelled: '已取消',
-  refunded: '已退款'
-}
-
-function goPay(order) {
-  uni.navigateTo({ url: '/pages/payment/index?id=' + order.id })
-}
-
-onMounted(async () => {
-  try {
-    const res = await getOrders()
-    orders.value = res.data || []
-  } catch (e) {
-    console.error('Failed to load orders', e)
+export default {
+  components: { CustomTabbar },
+  data() {
+    return {
+      orders: [],
+      statusMap: {
+        pending: '待支付',
+        paid: '已支付',
+        completed: '已完成',
+        cancelled: '已取消',
+        refunded: '已退款'
+      }
+    }
+  },
+  async onLoad() {
+    try {
+      const res = await getOrders()
+      this.orders = res.data || []
+    } catch (e) {
+      console.error('Failed to load orders', e)
+    }
+  },
+  methods: {
+    goPay(order) {
+      uni.navigateTo({ url: '/pages/payment/index?id=' + order.id })
+    }
   }
-})
+}
 </script>
 
 <style scoped>

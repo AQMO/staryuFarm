@@ -58,54 +58,60 @@
   </view>
 </template>
 
-<script setup>
-import { ref, computed, onMounted } from 'vue'
+<script>
 import { getModuleConfig, getRooms } from '../../api/index.js'
 import { useConfigStore } from '../../stores/config.js'
 import CustomTabbar from '../../components/custom-tabbar/custom-tabbar.vue'
 
 const configStore = useConfigStore()
-const rooms = ref([])
 
-const iconMap = {
-  room: '🏠',
-  food: '🍽️',
-  product: '🛒',
-  fruit_tree: '🌳',
-  plot: '🌱'
-}
-
-const enabledModules = computed(() => {
-  return configStore.modules.filter(m => m.isEnabled).sort((a, b) => a.sort - b.sort)
-})
-
-function navigateTo(key) {
-  const routeMap = {
-    room: '/pages/rooms/index',
-    food: '/pages/food/index',
-    product: '/pages/shop/index',
-    fruit_tree: '/pages/rent/index?type=fruit_tree',
-    plot: '/pages/rent/index?type=plot'
+export default {
+  components: { CustomTabbar },
+  data() {
+    return {
+      rooms: [],
+      iconMap: {
+        room: '🏠',
+        food: '🍽️',
+        product: '🛒',
+        fruit_tree: '🌳',
+        plot: '🌱'
+      }
+    }
+  },
+  computed: {
+    enabledModules() {
+      return configStore.state.modules.filter(m => m.isEnabled).sort((a, b) => a.sort - b.sort)
+    }
+  },
+  async onLoad() {
+    await configStore.loadConfig()
+    try {
+      const res = await getRooms()
+      this.rooms = res.data || []
+    } catch (e) {
+      console.error('Failed to load rooms', e)
+    }
+  },
+  methods: {
+    navigateTo(key) {
+      const routeMap = {
+        room: '/pages/rooms/index',
+        food: '/pages/food/index',
+        product: '/pages/shop/index',
+        fruit_tree: '/pages/rent/index?type=fruit_tree',
+        plot: '/pages/rent/index?type=plot'
+      }
+      const url = routeMap[key]
+      if (url) {
+        uni.navigateTo({ url })
+      }
+    },
+    goRoomDetail(id) {
+      uni.navigateTo({ url: '/pages/rooms/detail?id=' + id })
+    }
   }
-  const url = routeMap[key]
-  if (url) {
-    uni.navigateTo({ url })
-  }
 }
-
-function goRoomDetail(id) {
-  uni.navigateTo({ url: '/pages/rooms/detail?id=' + id })
-}
-
-onMounted(async () => {
-  await configStore.loadConfig()
-  try {
-    const res = await getRooms()
-    rooms.value = res.data || []
-  } catch (e) {
-    console.error('Failed to load rooms', e)
-  }
-})
 </script>
 
 <style scoped>
